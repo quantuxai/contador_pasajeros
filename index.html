@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Contador de Vehículos — AMA</title>
+<title>Contador de Pasajeros — AMA</title>
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background: #0f1115; color: #e8eaed; padding-bottom: 30px; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { margin:0; padding:0; }
+  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:#0f1115; color:#e8eaed; padding-bottom:30px; }
   header { padding:0; position:sticky; top:0; z-index:20;
-    background:linear-gradient(135deg,#1b2436,#11141b); border-bottom:1px solid #2b313b;
+    background:linear-gradient(135deg,#153033,#11141b); border-bottom:1px solid #2b313b;
     box-shadow:0 2px 12px rgba(0,0,0,.35); }
   .brand { display:flex; align-items:center; gap:11px; padding:12px 16px; }
   .brand .logo { width:40px; height:40px; border-radius:12px; flex:none;
-    background:linear-gradient(135deg,#2563eb,#4f7cff); display:flex; align-items:center;
-    justify-content:center; font-size:22px; box-shadow:0 3px 12px rgba(37,99,235,.45); }
+    background:linear-gradient(135deg,#0d9488,#22c3a6); display:flex; align-items:center;
+    justify-content:center; font-size:22px; box-shadow:0 3px 12px rgba(13,148,136,.45); }
   .brand-txt { flex:1; min-width:0; text-align:left; }
   .brand h1 { margin:0; font-size:18px; font-weight:700; letter-spacing:.2px; line-height:1.15; }
   .brand .tag { font-size:10.5px; color:#9aa2ad; margin-top:2px; text-transform:uppercase; letter-spacing:.7px; }
@@ -24,24 +24,26 @@
   .net::before { content:''; width:7px; height:7px; border-radius:50%; background:currentColor; }
   .net.on { background:rgba(67,160,71,.16); color:#7bd88a; }
   .net.off { background:rgba(229,57,53,.16); color:#ff8a8a; }
-  header .sub { font-size:12px; color:#9db4ff; padding:8px 16px; background:rgba(37,99,235,.09);
-    border-top:1px solid #222a38; text-align:left; font-weight:500; }
+  header .sub { font-size:12px; color:#7fe3d3; padding:8px 16px; background:rgba(13,148,136,.10);
+    border-top:1px solid #1e2a2a; text-align:left; font-weight:500; }
   .card { background:#161a20; border:1px solid #262b33; border-radius:14px; margin:12px; padding:14px; }
-  .card h2 { margin:0 0 12px; font-size:12px; letter-spacing:.8px; text-transform:uppercase; color:#7c93ff; }
+  .card h2 { margin:0 0 12px; font-size:12px; letter-spacing:.8px; text-transform:uppercase; color:#3ec9b0; }
   label { display:block; font-size:13px; color:#cbd2db; margin:12px 0 5px; font-weight:600; }
   label:first-of-type { margin-top:0; }
   input[type=text], select, textarea { width:100%; background:#0f1115; border:1px solid #2b313b; color:#e8eaed;
     border-radius:10px; padding:12px; font-size:15px; font-family:inherit; }
   textarea { resize:vertical; min-height:54px; }
-  .radio-row { display:flex; gap:8px; }
-  .radio-row button { flex:1; background:#0f1115; border:1px solid #2b313b; color:#cbd2db;
-    border-radius:10px; padding:12px; font-size:15px; font-weight:600; cursor:pointer; }
-  .radio-row button.on { background:#7c93ff; border-color:#7c93ff; color:#0f1115; }
+  .radio-row { display:flex; gap:8px; flex-wrap:wrap; }
+  .radio-row button { flex:1; min-width:90px; background:#0f1115; border:1px solid #2b313b; color:#cbd2db;
+    border-radius:10px; padding:12px; font-size:14px; font-weight:600; cursor:pointer; }
+  .radio-row button.on { background:#22c3a6; border-color:#22c3a6; color:#08211d; }
   .hint { font-size:12px; color:#6b7280; margin-top:4px; font-style:italic; }
   .auto { font-size:12px; color:#9aa2ad; margin-top:10px; }
-  .btn-primary { width:100%; background:#2563eb; color:#fff; border:none; border-radius:12px;
+  .btn-primary { width:100%; background:#0d9488; color:#fff; border:none; border-radius:12px;
     padding:15px; font-size:16px; font-weight:700; cursor:pointer; margin-top:6px; }
   .btn-primary:disabled { opacity:.4; }
+  .btn-ghost { width:100%; background:#1b1f27; color:#e8eaed; border:1px solid #2b313b; border-radius:10px;
+    padding:12px; font-size:14px; font-weight:600; cursor:pointer; margin-top:6px; }
   .hidden { display:none; }
   .combo-wrap { position:relative; }
   .combo-list { position:absolute; left:0; right:0; top:100%; z-index:30; background:#12151a;
@@ -49,30 +51,27 @@
     overflow-y:auto; display:none; }
   .combo-list.open { display:block; }
   .combo-item { padding:11px 12px; font-size:14px; border-bottom:1px solid #1c2027; cursor:pointer; }
-  .combo-item:active, .combo-item.hl { background:#232a35; }
-  .combo-item .cc { font-weight:700; color:#9db4ff; }
+  .combo-item:active { background:#232a35; }
+  .combo-item .cc { font-weight:700; color:#5fe0cb; }
   .combo-item .nn { color:#cbd2db; font-size:13px; }
   .combo-group { padding:7px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.5px;
-    color:#7c93ff; background:#161a20; position:sticky; top:0; }
+    color:#3ec9b0; background:#161a20; position:sticky; top:0; }
   .sel-badge { margin-top:6px; font-size:13px; color:#7bd88a; font-weight:600; }
-  .sel-badge a { color:#9db4ff; margin-left:8px; font-weight:500; }
-  .config-toggle { font-size:12px; color:#7c93ff; cursor:pointer; text-align:center; margin:4px 0 0; }
-  .totals { display:flex; gap:8px; padding:0 12px; }
-  .tot { flex:1; text-align:center; background:#1b1f27; border-radius:12px; padding:10px 4px; }
-  .tot .n { font-size:26px; font-weight:800; }
-  .tot .l { font-size:11px; color:#9aa2ad; text-transform:uppercase; letter-spacing:.5px; }
-  .tot.vacio .n { color:#7bd88a; }
-  .tot.ocu .n { color:#ffcf6b; }
-  .buttons { display:flex; gap:12px; padding:14px 12px; }
-  .tap { flex:1; border:none; border-radius:18px; color:#fff; font-size:26px; font-weight:800;
-    padding:40px 8px; cursor:pointer; user-select:none; transition:transform .05s, filter .1s;
+  .sel-badge a { color:#5fe0cb; margin-left:8px; font-weight:500; }
+  .config-toggle { font-size:12px; color:#3ec9b0; cursor:pointer; text-align:center; margin:4px 0 0; }
+  /* pantalla conteo */
+  .big-total { text-align:center; padding:16px 12px 6px; }
+  .big-total .n { font-size:72px; font-weight:800; line-height:1; color:#7fe3d3; font-variant-numeric:tabular-nums; }
+  .big-total .l { font-size:12px; color:#9aa2ad; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+  .tapwrap { padding:10px 12px; }
+  .tap-pax { width:100%; border:none; border-radius:22px; color:#062b25; font-size:30px; font-weight:800;
+    padding:60px 8px; cursor:pointer; user-select:none; transition:transform .05s, filter .1s;
+    background:linear-gradient(135deg,#12b28f,#2fe0bd); box-shadow:0 6px 20px rgba(20,180,150,.35);
     display:flex; flex-direction:column; align-items:center; gap:6px; }
-  .tap:active { transform:scale(.95); filter:brightness(1.18); }
-  .tap .sub { font-size:13px; font-weight:500; opacity:.85; }
-  .tap.vacio { background:linear-gradient(135deg,#2e7d32,#43a047); }
-  .tap.ocu { background:linear-gradient(135deg,#b26a00,#e39a1c); }
+  .tap-pax:active { transform:scale(.97); filter:brightness(1.12); }
+  .tap-pax .sub { font-size:14px; font-weight:600; opacity:.8; }
   .last { margin:0 12px 10px; padding:10px 12px; background:#12151a; border-radius:10px;
-    font-size:13px; color:#9aa2ad; min-height:18px; }
+    font-size:13px; color:#9aa2ad; min-height:18px; text-align:center; }
   .last b { color:#e8eaed; }
   .pend { margin:0 12px 10px; font-size:12px; color:#9aa2ad; text-align:center; }
   .pend .w { color:#ffcf6b; } .pend .ok { color:#7bd88a; }
@@ -83,54 +82,66 @@
   .export-row { display:flex; gap:8px; margin-top:8px; }
   .export-row button { flex:1; background:#16855c; color:#fff; border:none; border-radius:12px;
     padding:14px; font-size:15px; font-weight:700; cursor:pointer; }
+  .chips { font-size:12px; color:#9aa2ad; margin:2px 12px 8px; text-align:center; }
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
-    <div class="logo">🚗</div>
+    <div class="logo">🚌</div>
     <div class="brand-txt">
-      <h1>Contador de Vehículos</h1>
+      <h1>Contador de Pasajeros</h1>
       <div class="tag">Área Metropolitana de Asunción · AMA</div>
     </div>
     <div class="net off" id="netBadge">sin conexión</div>
   </div>
-  <div class="sub" id="hdrSub">Identificación del bloque</div>
+  <div class="sub" id="hdrSub">Identificación del puesto</div>
 </header>
 
 <!-- PANTALLA 1 -->
 <div id="setup">
   <div class="card">
-    <h2>Identificación del bloque</h2>
+    <h2>Identificación</h2>
     <label>1. Código o nombre del contador</label>
-    <input type="text" id="contador" placeholder="Ej: P3-Juan" autocomplete="off">
+    <input type="text" id="contador" placeholder="Ej: P1-Ana" autocomplete="off">
 
-    <label>Día (ordena las preseleccionadas)</label>
+    <label>Día (ordena las paradas)</label>
     <select id="dia"></select>
 
-    <label>2. Parada / punto de conteo</label>
+    <label>2. Parada / estación de trabajo</label>
     <div class="combo-wrap">
       <input type="text" id="paradaSearch" placeholder="Buscar por día, número o lugar..." autocomplete="off">
       <div class="combo-list" id="paradaList"></div>
     </div>
     <input type="hidden" id="parada">
     <div class="sel-badge" id="paradaSel"></div>
-    <div class="hint">Se muestran primero las paradas del día elegido. Escriba para buscar cualquier otra.</div>
 
-    <label>3. ¿Está en esta parada por cambio de parada (protocolo)?</label>
+    <label>3. ¿Está aquí por cambio de parada (protocolo de baja afluencia)?</label>
     <div class="radio-row" id="cambioRow">
-      <button data-v="Sí">Sí</button>
-      <button data-v="No" class="on">No</button>
+      <button data-v="Sí">Sí</button><button data-v="No" class="on">No</button>
     </div>
 
-    <label>4. Bloque horario (primeros 15 min de la hora)</label>
-    <select id="bloque">
+    <label>4. Sentido del flujo observado</label>
+    <div class="radio-row" id="sentidoRow">
+      <button data-v="Norte-Sur / Ida">Norte-Sur / Ida</button>
+      <button data-v="Sur-Norte / Vuelta">Sur-Norte / Vuelta</button>
+      <button data-v="Ambos sentidos">Ambos</button>
+    </div>
+
+    <label>5. Turno</label>
+    <div class="radio-row" id="turnoRow">
+      <button data-v="Mañana (06:00-13:00)">Mañana <span style="opacity:.75;font-weight:500;font-size:12px;">06:00-13:00</span></button>
+      <button data-v="Tarde (13:00-20:00)">Tarde <span style="opacity:.75;font-weight:500;font-size:12px;">13:00-20:00</span></button>
+    </div>
+
+    <label>6. Tramo horario de este registro</label>
+    <select id="tramo">
       <option value="">— Seleccione —</option>
-      <option>06:00-06:15</option><option>07:00-07:15</option><option>08:00-08:15</option>
-      <option>09:00-09:15</option><option>10:00-10:15</option><option>11:00-11:15</option>
-      <option>12:00-12:15</option><option>13:00-13:15</option><option>14:00-14:15</option>
-      <option>15:00-15:15</option><option>16:00-16:15</option><option>17:00-17:15</option>
-      <option>18:00-18:15</option><option>19:00-19:15</option>
+      <option>06:00-07:00</option><option>07:00-08:00</option><option>08:00-09:00</option>
+      <option>09:00-10:00</option><option>10:00-11:00</option><option>11:00-12:00</option>
+      <option>12:00-13:00</option><option>13:00-14:00</option><option>14:00-15:00</option>
+      <option>15:00-16:00</option><option>16:00-17:00</option><option>17:00-18:00</option>
+      <option>18:00-19:00</option><option>19:00-20:00</option>
     </select>
 
     <div class="auto">Inicio del registro (automático): <span id="inicioAuto">—</span></div>
@@ -139,7 +150,7 @@
     <div id="configBox" class="hidden" style="margin-top:10px;">
       <label>URL del Web App (Apps Script)</label>
       <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/..../exec" autocomplete="off">
-      <div class="hint">Pegue aquí la URL que obtiene al publicar el Apps Script (ver instrucciones). Se guarda en este dispositivo.</div>
+      <div class="hint">Pegue la URL del Apps Script de la hoja de PASAJEROS (ver instrucciones). Se guarda en este dispositivo.</div>
       <button class="btn-primary" style="background:#16855c;margin-top:8px;" onclick="guardarUrl()">Guardar enlace</button>
     </div>
   </div>
@@ -147,245 +158,330 @@
 
 <!-- PANTALLA 2 -->
 <div id="conteo" class="hidden">
-  <div class="totals">
-    <div class="tot vacio"><div class="n" id="tVacio">0</div><div class="l">Vacíos</div></div>
-    <div class="tot ocu"><div class="n" id="tOcu">0</div><div class="l">Ocupados</div></div>
-    <div class="tot"><div class="n" id="tTotal">0</div><div class="l">Total</div></div>
+  <div class="big-total"><div class="n" id="tTotal">0</div><div class="l">Pasajeros del tramo</div></div>
+  <div class="chips" id="chips"></div>
+  <div class="tapwrap">
+    <button class="tap-pax" onclick="registrar()">+1 PASAJERO<span class="sub">toque por cada persona que aborda</span></button>
   </div>
-  <div class="buttons">
-    <button class="tap vacio" onclick="registrar('Vacío')">VACÍO<span class="sub">+ registrar hora</span></button>
-    <button class="tap ocu" onclick="registrar('Ocupado')">OCUPADO<span class="sub">+ registrar hora</span></button>
-  </div>
-  <div class="last" id="lastMsg">Toca un botón por cada vehículo que pasa.</div>
+  <div class="last" id="lastMsg">Toca el botón por cada pasajero que sube al bus.</div>
   <div class="pend" id="pendMsg"></div>
   <div class="toolbar">
     <button onclick="deshacer()">↩ Deshacer último</button>
-    <button class="danger" onclick="reiniciar()">🗑 Reiniciar bloque</button>
+    <button class="danger" onclick="reiniciar()">🗑 Reiniciar tramo</button>
   </div>
   <div class="card">
-    <h2>Cierre del bloque</h2>
-    <label>Observaciones del bloque (opcional)</label>
+    <h2>Cierre del tramo</h2>
+    <label>Observaciones del tramo (opcional)</label>
     <textarea id="obs" placeholder="Notas..."></textarea>
     <div class="export-row">
       <button onclick="exportarCSV()">⬇ Respaldo CSV</button>
-      <button onclick="reintentar()" style="background:#2563eb;">⟳ Reenviar pendientes</button>
+      <button onclick="reintentar()" style="background:#0d9488;">⟳ Reenviar pendientes</button>
     </div>
-    <button class="btn-primary" style="margin-top:10px;background:#7c3aed;" onclick="nuevoBloque()">✓ Cerrar y nuevo bloque</button>
+    <button class="btn-primary" style="margin-top:10px;background:#7c3aed;" onclick="nuevoTramo()">✓ Cerrar y nuevo tramo</button>
   </div>
 </div>
 
 <script>
-var PARADAS = [{"c": "LU_P1", "n": "Lunes 1 · IPS Central frente al Stock", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.27,-57.584"}, {"c": "LU_P2", "n": "Lunes 2 · Mcal. Estigarribia Frente a Multiplaza", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.317,-57.572"}, {"c": "LU_P3", "n": "Lunes 3 · Mcal Lopez y Kubischek ENEX", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.292,-57.603"}, {"c": "LU_P4", "n": "Lunes 4 · Ruta Trans Chaco y Boquerón Stock MRA Sentido hacia Asunción", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.212,-57.529"}, {"c": "MA_P1", "n": "Martes 1 · Avda Mcal Lopez c/ Dr Weiss Frente al MIC  Asuncion", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.293,-57.583"}, {"c": "MA_P2", "n": "Martes 2 · Avda Mcal Lopez y 22 de septiembre .  M.Defensa. Asuncion", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.293,-57.613"}, {"c": "MA_P3", "n": "Martes 3 · Ruta 2 y Candelaria Super Edward Capiata", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.354,-57.443"}, {"c": "MA_P4", "n": "Martes 4 · Ruta 3 Trans Chaco y Jara Pastore U. M. Serrana", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.244,-57.547"}, {"c": "MI_P1", "n": "Miercoles 1 · Avda. Mcal Lopez. Frente a Muni Asunción", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.304,-57.56"}, {"c": "MI_P2", "n": "Miercoles 2 · Aviadores del Chaco y Santa Teresa, Estacion de servicio de Shoping Galeria", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.283,-57.563"}, {"c": "MI_P3", "n": "Miercoles 3 · Avda. Mcal Lopez y Kubischeck Embajada EEUU", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.293,-57.604"}, {"c": "MI_P4", "n": "Miercoles 4 · Avda La Victoria c/Konrad Adenauer Asai Vip San Lorenzo", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.385,-57.496"}, {"c": "JU_P1", "n": "Jueves 1 · Avda Mcal Lopez y Malutin Shoping Villa Morra", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.294,-57.581"}, {"c": "JU_P2", "n": "Jueves 2 · Stma Trinida y Sacramento Frente a God Pan Asuncion", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.259,-57.58"}, {"c": "JU_P3", "n": "Jueves 3 · Avda Rep. Argentina Costado de la Terminal de Buses Asuncion", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.325,-57.596"}, {"c": "JU_P4", "n": "Jueves 4 · Ruta 2 Mcal Estigarribia Frente a Campus de la UNA", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.339,-57.523"}, {"c": "VI_P1", "n": "Viernes 1 · Elizardo Aquino c/ Mcal. Estigarribia Bco. Familiar Limpio", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.169,-57.475"}, {"c": "VI_P2", "n": "Viernes 2 · Ruta 3 Trans Chaco y Telémaco Silvera Frente a Luisito Loma Pyta", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.237,-57.54"}, {"c": "VI_P3", "n": "Viernes 3 · Avda Mcal Lopez y Cruz del Defensor Manzana T B. Familiar", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.295,-57.579"}, {"c": "VI_P4", "n": "Viernes 4 · Defensores Del Chaco y Avd F. De  La Mora 4 Mojones Asunción", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.339,-57.585"}, {"c": "SA_P1", "n": "Sabado 1 · Ruta 3 Trans Chaco c/Mcal Lopez Stock MRA, sentido Limpio ciudad", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.213,-57.529"}, {"c": "SA_P2", "n": "Sabado 2 · 9 de Agosto e Independencia Nacional Frente a Plazoleta ÑEMBY", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.393,-57.547"}, {"c": "SA_P3", "n": "Sabado 3 · Ruta 2 Mcal Estigarribia c/ Pastora Cespedes Frente a Salenmma Shoping", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.334,-57.537"}, {"c": "SA_P4", "n": "Sabado 4 · Humaita y Julio Correa Cerca de S San Cayetano LUQUE", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.27,-57.486"}, {"c": "DO_P1", "n": "Domingo 1 · Ruta 025 y Ruta 3 Trans Chaco Rotonda sentido hacia Asunción venta de Palets", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.203,-57.525"}, {"c": "DO_P2", "n": "Domingo 2 · Avda Fernando de la Mora c/ Rep Argentina Frente a la Terminal de Buses de Asunción", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.3267,-57.5966"}, {"c": "DO_P3", "n": "Domingo 3 · Sicilia entre Colon y Montevideo (poquisima frecuencia en toda la semana) Asuncion", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.289,-57.648"}, {"c": "DO_P4", "n": "Domingo 4 · Avda. Defensores del Chaco y Progreso Entre Super Edward y Luisito Asuncion", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.338,-57.5832"}, {"c": "DO_P5", "n": "Domingo 5 · Avda La Victoria c/Konrad Adenauer Asai Vip San Lorenzo", "m": "https://www.google.com/maps/dir/?api=1&destination=-25.385,-57.496"}];
-
+var PARADAS = [
+{
+"c": "LU_P1",
+"n": "Lunes 1 · IPS Central frente al Stock",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.27,-57.584"
+},
+{
+"c": "LU_P2",
+"n": "Lunes 2 · Mcal. Estigarribia Frente a Multiplaza",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.317,-57.572"
+},
+{
+"c": "LU_P3",
+"n": "Lunes 3 · Mcal Lopez y Kubischek ENEX",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.292,-57.603"
+},
+{
+"c": "LU_P4",
+"n": "Lunes 4 · Ruta Trans Chaco y Boquerón Stock MRA Sentido hacia Asunción",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.212,-57.529"
+},
+{
+"c": "MA_P1",
+"n": "Martes 1 · Avda Mcal Lopez c/ Dr Weiss Frente al MIC  Asuncion",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.293,-57.583"
+},
+{
+"c": "MA_P2",
+"n": "Martes 2 · Avda Mcal Lopez y 22 de septiembre .  M.Defensa. Asuncion",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.293,-57.613"
+},
+{
+"c": "MA_P3",
+"n": "Martes 3 · Ruta 2 y Candelaria Super Edward Capiata",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.354,-57.443"
+},
+{
+"c": "MA_P4",
+"n": "Martes 4 · Ruta 3 Trans Chaco y Jara Pastore U. M. Serrana",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.244,-57.547"
+},
+{
+"c": "MI_P1",
+"n": "Miercoles 1 · Avda. Mcal Lopez. Frente a Muni Asunción",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.304,-57.56"
+},
+{
+"c": "MI_P2",
+"n": "Miercoles 2 · Aviadores del Chaco y Santa Teresa, Estacion de servicio de Shoping Galeria",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.283,-57.563"
+},
+{
+"c": "MI_P3",
+"n": "Miercoles 3 · Avda. Mcal Lopez y Kubischeck Embajada EEUU",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.293,-57.604"
+},
+{
+"c": "MI_P4",
+"n": "Miercoles 4 · Avda La Victoria c/Konrad Adenauer Asai Vip San Lorenzo",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.385,-57.496"
+},
+{
+"c": "JU_P1",
+"n": "Jueves 1 · Avda Mcal Lopez y Malutin Shoping Villa Morra",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.294,-57.581"
+},
+{
+"c": "JU_P2",
+"n": "Jueves 2 · Stma Trinida y Sacramento Frente a God Pan Asuncion",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.259,-57.58"
+},
+{
+"c": "JU_P3",
+"n": "Jueves 3 · Avda Rep. Argentina Costado de la Terminal de Buses Asuncion",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.325,-57.596"
+},
+{
+"c": "JU_P4",
+"n": "Jueves 4 · Ruta 2 Mcal Estigarribia Frente a Campus de la UNA",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.339,-57.523"
+},
+{
+"c": "VI_P1",
+"n": "Viernes 1 · Elizardo Aquino c/ Mcal. Estigarribia Bco. Familiar Limpio",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.169,-57.475"
+},
+{
+"c": "VI_P2",
+"n": "Viernes 2 · Ruta 3 Trans Chaco y Telémaco Silvera Frente a Luisito Loma Pyta",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.237,-57.54"
+},
+{
+"c": "VI_P3",
+"n": "Viernes 3 · Avda Mcal Lopez y Cruz del Defensor Manzana T B. Familiar",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.295,-57.579"
+},
+{
+"c": "VI_P4",
+"n": "Viernes 4 · Defensores Del Chaco y Avd F. De  La Mora 4 Mojones Asunción",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.339,-57.585"
+},
+{
+"c": "SA_P1",
+"n": "Sabado 1 · Ruta 3 Trans Chaco c/Mcal Lopez Stock MRA, sentido Limpio ciudad",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.213,-57.529"
+},
+{
+"c": "SA_P2",
+"n": "Sabado 2 · 9 de Agosto e Independencia Nacional Frente a Plazoleta ÑEMBY",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.393,-57.547"
+},
+{
+"c": "SA_P3",
+"n": "Sabado 3 · Ruta 2 Mcal Estigarribia c/ Pastora Cespedes Frente a Salenmma Shoping",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.334,-57.537"
+},
+{
+"c": "SA_P4",
+"n": "Sabado 4 · Humaita y Julio Correa Cerca de S San Cayetano LUQUE",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.27,-57.486"
+},
+{
+"c": "DO_P1",
+"n": "Domingo 1 · Ruta 025 y Ruta 3 Trans Chaco Rotonda sentido hacia Asunción venta de Palets",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.203,-57.525"
+},
+{
+"c": "DO_P2",
+"n": "Domingo 2 · Avda Fernando de la Mora c/ Rep Argentina Frente a la Terminal de Buses de Asunción",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.3267,-57.5966"
+},
+{
+"c": "DO_P3",
+"n": "Domingo 3 · Sicilia entre Colon y Montevideo (poquisima frecuencia en toda la semana) Asuncion",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.289,-57.648"
+},
+{
+"c": "DO_P4",
+"n": "Domingo 4 · Avda. Defensores del Chaco y Progreso Entre Super Edward y Luisito Asuncion",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.338,-57.5832"
+},
+{
+"c": "DO_P5",
+"n": "Domingo 5 · Avda La Victoria c/Konrad Adenauer Asai Vip San Lorenzo",
+"m": "https://www.google.com/maps/dir/?api=1&destination=-25.385,-57.496"
+}
+];
 var DIAS = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
 var DIA_PREF = {Lunes:"LU_",Martes:"MA_",Miercoles:"MI_",Jueves:"JU_",Viernes:"VI_",Sabado:"SA_",Domingo:"DO_"};
 
-var meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", bloque:"", inicio:"", obs:"" };
-var log = [];              // registros: {id,fecha,hora,estado,status,...}
+var meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", sentido:"", turno:"", tramo:"", inicio:"", obs:"" };
+var log = [];
 var scriptUrl = "";
 var deviceId = "";
 
-/* ---------- persistencia ---------- */
 function cargar(){
-  try{
-    var s = JSON.parse(localStorage.getItem('cv_state')||'null');
-    if(s){ meta=s.meta||meta; log=s.log||[]; }
-  }catch(e){}
-  scriptUrl = localStorage.getItem('cv_url')||"https://script.google.com/macros/s/AKfycbyZjGFaGFUao5vgQTwdCJ_dcpX4AS8sEmnrvM2xvRiSx9aFmBooi8o-8MNympzEsnzy/exec";
-  deviceId = localStorage.getItem('cv_device');
-  if(!deviceId){ deviceId = 'D'+Math.random().toString(36).slice(2,8).toUpperCase(); localStorage.setItem('cv_device',deviceId); }
+  try{ var s=JSON.parse(localStorage.getItem('cp_state')||'null'); if(s){ meta=s.meta||meta; log=s.log||[]; } }catch(e){}
+  scriptUrl = localStorage.getItem('cp_url')||"https://script.google.com/macros/s/AKfycbzPzPmLaxleKPbdF-xr7dwSK-dCczgZEca59wDebnrnm8fp9nT493UAfoE_IgIRQMAHhQ/exec";
+  deviceId = localStorage.getItem('cp_device');
+  if(!deviceId){ deviceId='D'+Math.random().toString(36).slice(2,8).toUpperCase(); localStorage.setItem('cp_device',deviceId); }
 }
-function guardar(){ try{ localStorage.setItem('cv_state', JSON.stringify({meta:meta,log:log})); }catch(e){} }
-
-function ahoraHMS(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');};
-  return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
-function hoyFecha(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');};
-  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
+function guardar(){ try{ localStorage.setItem('cp_state', JSON.stringify({meta:meta,log:log})); }catch(e){} }
+function ahoraHMS(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');}; return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
+function hoyFecha(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
 function stamp(){ return hoyFecha()+' '+ahoraHMS(); }
 
-/* ---------- estado de red ---------- */
-function pintarRed(){
-  var b=document.getElementById('netBadge');
-  if(navigator.onLine){ b.className='net on'; b.textContent='en línea'; }
-  else { b.className='net off'; b.textContent='sin conexión'; }
-}
+function pintarRed(){ var b=document.getElementById('netBadge');
+  if(navigator.onLine){ b.className='net on'; b.textContent='en línea'; } else { b.className='net off'; b.textContent='sin conexión'; } }
 window.addEventListener('online', function(){ pintarRed(); flush(); });
 window.addEventListener('offline', pintarRed);
 
-/* ---------- config URL ---------- */
 function toggleConfig(){ document.getElementById('configBox').classList.toggle('hidden'); }
-function guardarUrl(){
-  scriptUrl = document.getElementById('scriptUrl').value.trim();
-  localStorage.setItem('cv_url', scriptUrl);
-  alert(scriptUrl ? 'Enlace guardado.' : 'Enlace borrado. La app contará y guardará local, pero no enviará a Google Sheets.');
-}
+function guardarUrl(){ scriptUrl=document.getElementById('scriptUrl').value.trim(); localStorage.setItem('cp_url',scriptUrl);
+  alert(scriptUrl?'Enlace guardado.':'Enlace borrado. La app contará y guardará local, pero no enviará a Google Sheets.'); }
 
-/* ---------- validación ---------- */
+
 function validar(){
-  var ok = document.getElementById('contador').value.trim() &&
-           document.getElementById('parada').value.trim() &&
-           document.getElementById('bloque').value;
+  var ok = document.getElementById('contador').value.trim() && document.getElementById('parada').value.trim() &&
+    meta.sentido && meta.turno && document.getElementById('tramo').value;
   document.getElementById('startBtn').disabled = !ok;
 }
-['contador','bloque'].forEach(function(id){
-  document.getElementById(id).addEventListener('input', validar);
-  document.getElementById(id).addEventListener('change', validar);
-});
+document.getElementById('contador').addEventListener('input', validar);
+document.getElementById('tramo').addEventListener('change', validar);
 var cambioVal="No";
-document.querySelectorAll('#cambioRow button').forEach(function(b){
-  b.onclick=function(){ document.querySelectorAll('#cambioRow button').forEach(function(x){x.classList.remove('on');});
-    b.classList.add('on'); cambioVal=b.dataset.v; };
-});
+function bindRadio(rowId, cb){
+  document.querySelectorAll('#'+rowId+' button').forEach(function(b){
+    b.onclick=function(){ document.querySelectorAll('#'+rowId+' button').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on'); cb(b.dataset.v); validar(); };
+  });
+}
+bindRadio('cambioRow', function(v){ cambioVal=v; meta.cambio=v; });
+bindRadio('sentidoRow', function(v){ meta.sentido=v; });
+bindRadio('turnoRow', function(v){ meta.turno=v; });
 
-/* ---------- combobox paradas ---------- */
-(function(){
-  var sel=document.getElementById('dia');
+/* combobox paradas */
+(function(){ var sel=document.getElementById('dia');
   DIAS.forEach(function(d){ var o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
   var map={0:"Domingo",1:"Lunes",2:"Martes",3:"Miercoles",4:"Jueves",5:"Viernes",6:"Sabado"};
   sel.value=map[new Date().getDay()];
   sel.addEventListener('change', function(){ if(!document.getElementById('paradaSearch').value.trim()) mostrarLista(''); });
 })();
 function esPresel(p){ return /_P/.test(p.c) && /^(LU|MA|MI|JU|VI|SA|DO)_/.test(p.c); }
-function filtrar(q){
-  q=(q||'').trim().toLowerCase();
-  var pref=DIA_PREF[document.getElementById('dia').value];
+function filtrar(q){ q=(q||'').trim().toLowerCase(); var pref=DIA_PREF[document.getElementById('dia').value];
   var pd=[],po=[],rf=[];
-  PARADAS.forEach(function(p){
-    if(q && (p.c+' '+(p.n||'')).toLowerCase().indexOf(q)<0) return;
-    if(esPresel(p)){ if(p.c.indexOf(pref)===0) pd.push(p); else po.push(p); } else rf.push(p);
-  });
+  PARADAS.forEach(function(p){ if(q && (p.c+' '+(p.n||'')).toLowerCase().indexOf(q)<0) return;
+    if(esPresel(p)){ if(p.c.indexOf(pref)===0) pd.push(p); else po.push(p); } else rf.push(p); });
   return {pd:pd,po:po,rf:rf};
 }
-function mostrarLista(q){
-  var r=filtrar(q), box=document.getElementById('paradaList'), html='';
+function mostrarLista(q){ var r=filtrar(q), box=document.getElementById('paradaList'), html='';
   function g(t,a,l){ if(!a.length) return ''; var s='<div class="combo-group">'+t+'</div>';
     a.slice(0,l).forEach(function(p){ s+='<div class="combo-item" data-c="'+p.c+'"><span class="cc">'+p.c+'</span> — <span class="nn">'+(p.n||'')+'</span></div>'; }); return s; }
-  html+=g('Preseleccionadas del día', r.pd, 10);
-  if(q) html+=g('Preseleccionadas (otros días)', r.po, 10);
-  html+=g('Otras paradas', r.rf, 40);
+  html+=g('Paradas del día', r.pd, 10); if(q) html+=g('Paradas (otros días)', r.po, 10); html+=g('Otras paradas', r.rf, 40);
   if(!html) html='<div class="combo-item">Sin resultados</div>';
   box.innerHTML=html; box.classList.add('open');
   box.querySelectorAll('.combo-item[data-c]').forEach(function(it){ it.onclick=function(){ elegir(it.dataset.c); }; });
 }
-function elegir(cod){
-  var p=PARADAS.filter(function(x){return x.c===cod;})[0]; if(!p) return;
-  document.getElementById('parada').value=p.c;
-  document.getElementById('paradaSearch').value='';
+function elegir(cod){ var p=PARADAS.filter(function(x){return x.c===cod;})[0]; if(!p) return;
+  document.getElementById('parada').value=p.c; document.getElementById('paradaSearch').value='';
   document.getElementById('paradaList').classList.remove('open');
   var nav=p.m?' <a href="'+p.m+'" target="_blank" rel="noopener">Navegar ▸</a>':'';
   document.getElementById('paradaSel').innerHTML='✓ '+p.c+' — '+(p.n||'')+nav;
-  meta.parada_codigo=p.c; meta.parada_nombre=p.n||'';
-  validar();
+  meta.parada_codigo=p.c; meta.parada_nombre=p.n||''; validar();
 }
-(function(){
-  var inp=document.getElementById('paradaSearch');
+(function(){ var inp=document.getElementById('paradaSearch');
   inp.addEventListener('focus', function(){ mostrarLista(inp.value); });
   inp.addEventListener('input', function(){ document.getElementById('parada').value=''; mostrarLista(inp.value); validar(); });
   document.addEventListener('click', function(e){ if(!e.target.closest('.combo-wrap')) document.getElementById('paradaList').classList.remove('open'); });
 })();
 
-/* ---------- iniciar ---------- */
 function iniciar(){
   meta.contador=document.getElementById('contador').value.trim();
-  meta.cambio=cambioVal;
-  meta.bloque=document.getElementById('bloque').value;
-  meta.inicio=stamp();
+  meta.cambio=cambioVal; meta.tramo=document.getElementById('tramo').value; meta.inicio=stamp();
   guardar(); mostrarConteo();
 }
 function mostrarConteo(){
   document.getElementById('setup').classList.add('hidden');
   document.getElementById('conteo').classList.remove('hidden');
-  document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+meta.bloque+' · '+meta.contador;
+  document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+meta.tramo+' · '+meta.contador;
+  document.getElementById('chips').textContent = meta.sentido+'  ·  '+meta.turno;
   document.getElementById('obs').value = meta.obs||'';
   render();
 }
 
-/* ---------- registro por toque ---------- */
-function registrar(estado){
-  var rec={ id:Date.now()+'_'+Math.random().toString(36).slice(2,6),
-    fecha:hoyFecha(), hora:ahoraHMS(), contador:meta.contador,
-    parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
-    cambio_parada:meta.cambio, bloque:meta.bloque, estado:estado,
+function registrar(){
+  var rec={ id:Date.now()+'_'+Math.random().toString(36).slice(2,6), fecha:hoyFecha(), hora:ahoraHMS(),
+    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
+    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:meta.tramo,
     observaciones:document.getElementById('obs')?document.getElementById('obs').value:'',
     dispositivo:deviceId, status:'pending' };
   log.push(rec); guardar();
-  if(navigator.vibrate) navigator.vibrate(15);
-  document.getElementById('lastMsg').innerHTML='Último: <b>'+estado+'</b> a las '+rec.hora;
-  render();
-  enviar(rec);
+  if(navigator.vibrate) navigator.vibrate(12);
+  document.getElementById('lastMsg').innerHTML='Último pasajero: <b>'+rec.hora+'</b>';
+  render(); enviar(rec);
 }
-function deshacer(){
-  if(!log.length) return;
-  log.pop(); guardar();
-  document.getElementById('lastMsg').textContent='Se deshizo el último registro (local).';
-  render();
-}
-function reiniciar(){
-  if(!log.length) return;
-  if(confirm('¿Reiniciar el conteo local de este bloque? (No borra lo ya enviado a Google Sheets)')){
-    log=[]; guardar(); render();
-  }
-}
-function render(){
-  var v=log.filter(function(r){return r.estado==='Vacío';}).length;
-  var o=log.filter(function(r){return r.estado==='Ocupado';}).length;
-  document.getElementById('tVacio').textContent=v;
-  document.getElementById('tOcu').textContent=o;
-  document.getElementById('tTotal').textContent=log.length;
-  pintarPend();
-}
-function pintarPend(){
-  var pend=log.filter(function(r){return r.status==='pending';}).length;
-  var el=document.getElementById('pendMsg');
-  if(!scriptUrl){ el.innerHTML='<span class="w">⚠ Sin enlace de Google Sheets configurado — guardando solo local.</span>'; return; }
-  el.innerHTML = pend? '<span class="w">⏳ '+pend+' pendiente(s) de enviar</span>' : '<span class="ok">✓ todo enviado</span>';
-}
+function deshacer(){ if(!log.length) return; log.pop(); guardar();
+  document.getElementById('lastMsg').textContent='Se deshizo el último (local).'; render(); }
+function reiniciar(){ if(!log.length) return;
+  if(confirm('¿Reiniciar el conteo local de este tramo? (No borra lo ya enviado a Google Sheets)')){ log=[]; guardar(); render(); } }
+function render(){ document.getElementById('tTotal').textContent=log.length; pintarPend(); }
+function pintarPend(){ var pend=log.filter(function(r){return r.status==='pending';}).length; var el=document.getElementById('pendMsg');
+  if(!scriptUrl){ el.innerHTML='<span class="w">⚠ Sin enlace de Google Sheets — guardando solo local.</span>'; return; }
+  el.innerHTML = pend? '<span class="w">⏳ '+pend+' pendiente(s) de enviar</span>' : '<span class="ok">✓ todo enviado</span>'; }
 
-/* ---------- envío a Google Sheets ---------- */
 function enviar(rec){
   if(!scriptUrl){ pintarPend(); return; }
   if(!navigator.onLine){ pintarPend(); return; }
   try{
-    fetch(scriptUrl, { method:'POST', mode:'no-cors',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify(rec) })
+    fetch(scriptUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(rec) })
     .then(function(){ rec.status='sent'; guardar(); pintarPend(); })
     .catch(function(){ rec.status='pending'; guardar(); pintarPend(); });
   }catch(e){ rec.status='pending'; guardar(); pintarPend(); }
 }
-function flush(){
-  if(!scriptUrl || !navigator.onLine) { pintarPend(); return; }
-  log.filter(function(r){return r.status==='pending';}).forEach(function(r){ enviar(r); });
-}
+function flush(){ if(!scriptUrl || !navigator.onLine){ pintarPend(); return; }
+  log.filter(function(r){return r.status==='pending';}).forEach(function(r){ enviar(r); }); }
 function reintentar(){ flush(); alert('Reintentando enviar los pendientes...'); }
 setInterval(flush, 20000);
 
-/* ---------- observaciones ---------- */
 document.getElementById('obs').addEventListener('input', function(){ meta.obs=this.value; guardar(); });
 
-/* ---------- exportar CSV ---------- */
 function exportarCSV(){
   if(!log.length){ alert('No hay registros.'); return; }
   var esc=function(v){ v=String(v==null?'':v); return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
-  var h=['Fecha','Hora','Contador','Parada_Codigo','Parada_Nombre','Cambio_Parada','Bloque_Horario','Estado','Observaciones','ID_dispositivo','Estado_envio'];
+  var h=['Fecha','Hora','Contador','Parada_Codigo','Parada_Nombre','Cambio_Parada','Sentido','Turno','Tramo_Horario','Observaciones','ID_dispositivo','Estado_envio'];
   var lines=[h.join(',')];
-  log.forEach(function(r){ lines.push([r.fecha,r.hora,r.contador,r.parada_codigo,r.parada_nombre,r.cambio_parada,r.bloque,r.estado,r.observaciones,r.dispositivo,r.status].map(esc).join(',')); });
+  log.forEach(function(r){ lines.push([r.fecha,r.hora,r.contador,r.parada_codigo,r.parada_nombre,r.cambio_parada,r.sentido,r.turno,r.tramo,r.observaciones,r.dispositivo,r.status].map(esc).join(',')); });
   var blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='conteo_'+(meta.parada_codigo||'').replace(/[^A-Za-z0-9]/g,'')+'_'+(meta.bloque||'').replace(/[^0-9]/g,'')+'.csv';
+  a.download='pasajeros_'+(meta.parada_codigo||'').replace(/[^A-Za-z0-9]/g,'')+'_'+(meta.tramo||'').replace(/[^0-9]/g,'')+'.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
-/* ---------- nuevo bloque ---------- */
-function nuevoBloque(){
+function nuevoTramo(){
   var pend=log.filter(function(r){return r.status==='pending';}).length;
-  if(pend && !confirm('Hay '+pend+' registro(s) sin enviar. ¿Cerrar el bloque igual? (Se reintentarán solos cuando haya señal)')) return;
+  if(pend && !confirm('Hay '+pend+' registro(s) sin enviar. ¿Cerrar el tramo igual? (Se reintentarán solos cuando haya señal)')) return;
   log=[]; meta.obs='';
   document.getElementById('setup').classList.remove('hidden');
   document.getElementById('conteo').classList.add('hidden');
-  document.getElementById('hdrSub').textContent='Identificación del bloque';
+  document.getElementById('hdrSub').textContent='Identificación del puesto';
   document.getElementById('contador').value=meta.contador;
-  document.getElementById('bloque').value='';
+  document.getElementById('tramo').value='';
   document.getElementById('obs').value='';
   if(meta.parada_codigo){ document.getElementById('parada').value=meta.parada_codigo;
     document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||''); }
@@ -393,21 +489,20 @@ function nuevoBloque(){
   guardar(); validar(); window.scrollTo(0,0);
 }
 
-/* ---------- init ---------- */
 (function init(){
-  cargar();
-  pintarRed();
+  cargar(); pintarRed();
   if(scriptUrl) document.getElementById('scriptUrl').value=scriptUrl;
   document.getElementById('inicioAuto').textContent=stamp();
-  if(meta.bloque && log.length>=0 && meta.contador && meta.parada_codigo){
+  if(meta.tramo && meta.contador && meta.parada_codigo && meta.sentido && meta.turno){
     document.getElementById('contador').value=meta.contador;
-    document.getElementById('bloque').value=meta.bloque;
+    document.getElementById('tramo').value=meta.tramo;
     document.getElementById('parada').value=meta.parada_codigo;
     document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||'');
     cambioVal=meta.cambio||'No';
     document.querySelectorAll('#cambioRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===cambioVal); });
-    mostrarConteo();
-    flush();
+    document.querySelectorAll('#sentidoRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===meta.sentido); });
+    document.querySelectorAll('#turnoRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===meta.turno); });
+    mostrarConteo(); flush();
   }
   validar();
 })();
