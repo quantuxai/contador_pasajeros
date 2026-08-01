@@ -146,7 +146,7 @@
 
     <div class="auto">Inicio del registro (automático): <span id="inicioAuto">—</span></div>
     <button class="btn-primary" id="startBtn" onclick="iniciar()" disabled>Iniciar conteo →</button>
-    <div class="config-toggle" onclick="toggleConfig()">⚙ Configurar enlace de Google Sheets</div>
+    <!-- Enlace de Google Sheets fijo en el código (config oculto en producción) -->
     <div id="configBox" class="hidden" style="margin-top:10px;">
       <label>URL del Web App (Apps Script)</label>
       <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/..../exec" autocomplete="off">
@@ -160,6 +160,10 @@
 <div id="conteo" class="hidden">
   <div class="big-total"><div class="n" id="tTotal">0</div><div class="l">Pasajeros del tramo</div></div>
   <div class="chips" id="chips"></div>
+  <div id="timerBar" style="margin:6px 12px 0;text-align:center;background:#12151a;border:1px solid #2b313b;border-radius:12px;padding:9px;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:#3ec9b0;letter-spacing:1px;">
+    <span id="timerTime">⏱ 60:00</span>
+    <div id="timerSub" style="font-size:11px;font-weight:600;color:#9aa2ad;letter-spacing:.5px;text-transform:uppercase;margin-top:3px;">Tiempo del tramo (60 min)</div>
+  </div>
   <div class="tapwrap">
     <button class="tap-pax" onclick="registrar()">+1 PASAJERO<span class="sub">toque por cada persona que aborda</span></button>
   </div>
@@ -167,14 +171,12 @@
   <div class="pend" id="pendMsg"></div>
   <div class="toolbar">
     <button onclick="deshacer()">↩ Deshacer último</button>
-    <button class="danger" onclick="reiniciar()">🗑 Reiniciar tramo</button>
   </div>
   <div class="card">
     <h2>Cierre del tramo</h2>
     <label>Observaciones del tramo (opcional)</label>
     <textarea id="obs" placeholder="Notas..."></textarea>
     <div class="export-row">
-      <button onclick="exportarCSV()">⬇ Respaldo CSV</button>
       <button onclick="reintentar()" style="background:#0d9488;">⟳ Reenviar pendientes</button>
     </div>
     <button class="btn-primary" style="margin-top:10px;background:#7c3aed;" onclick="nuevoTramo()">✓ Cerrar y nuevo tramo</button>
@@ -332,7 +334,7 @@ var PARADAS = [
 var DIAS = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
 var DIA_PREF = {Lunes:"LU_",Martes:"MA_",Miercoles:"MI_",Jueves:"JU_",Viernes:"VI_",Sabado:"SA_",Domingo:"DO_"};
 
-var meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", sentido:"", turno:"", tramo:"", inicio:"", obs:"" };
+var meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", sentido:"", turno:"", tramo:"", inicio:"", obs:"", tramoInicio:0, avisado:false };
 var log = [];
 var scriptUrl = "";
 var deviceId = "";
@@ -414,6 +416,7 @@ function elegir(cod){ var p=PARADAS.filter(function(x){return x.c===cod;})[0]; i
 function iniciar(){
   meta.contador=document.getElementById('contador').value.trim();
   meta.cambio=cambioVal; meta.tramo=document.getElementById('tramo').value; meta.inicio=stamp();
+  meta.tramoInicio=Date.now(); meta.avisado=false;
   guardar(); mostrarConteo();
 }
 function mostrarConteo(){
@@ -422,6 +425,7 @@ function mostrarConteo(){
   document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+meta.tramo+' · '+meta.contador;
   document.getElementById('chips').textContent = meta.sentido+'  ·  '+meta.turno;
   document.getElementById('obs').value = meta.obs||'';
+  iniciarTimer();
   render();
 }
 
@@ -436,23 +440,47 @@ function registrar(){
   document.getElementById('lastMsg').innerHTML='Último pasajero: <b>'+rec.hora+'</b>';
   render(); enviar(rec);
 }
-function deshacer(){ if(!log.length) return; log.pop(); guardar();
-  document.getElementById('lastMsg').textContent='Se deshizo el último (local).'; render(); }
+function deshacer(){ if(!log.length) return; var rec=log.pop(); guardar();
+  if(rec.status==='sent'){ eliminarEnSheets(rec); } else if(rec.status==='sending'){ rec.deleted=true; }
+  document.getElementById('lastMsg').textContent='Se deshizo el último.'; render(); }
 function reiniciar(){ if(!log.length) return;
   if(confirm('¿Reiniciar el conteo local de este tramo? (No borra lo ya enviado a Google Sheets)')){ log=[]; guardar(); render(); } }
 function render(){ document.getElementById('tTotal').textContent=log.length; pintarPend(); }
-function pintarPend(){ var pend=log.filter(function(r){return r.status==='pending';}).length; var el=document.getElementById('pendMsg');
+function pintarPend(){ var pend=log.filter(function(r){return r.status!=='sent';}).length; var el=document.getElementById('pendMsg');
   if(!scriptUrl){ el.innerHTML='<span class="w">⚠ Sin enlace de Google Sheets — guardando solo local.</span>'; return; }
   el.innerHTML = pend? '<span class="w">⏳ '+pend+' pendiente(s) de enviar</span>' : '<span class="ok">✓ todo enviado</span>'; }
 
 function enviar(rec){
-  if(!scriptUrl){ pintarPend(); return; }
-  if(!navigator.onLine){ pintarPend(); return; }
+  if(!scriptUrl || !navigator.onLine){ pintarPend(); return; }
+  if(rec.status==='sent' || rec.status==='sending'){ return; }
+  rec.status='sending'; guardar(); pintarPend();
+  var payload={}; for(var k in rec){ if(k!=='status') payload[k]=rec[k]; } payload.accion='add';
   try{
-    fetch(scriptUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(rec) })
-    .then(function(){ rec.status='sent'; guardar(); pintarPend(); })
+    fetch(scriptUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) })
+    .then(function(){ rec.status='sent'; guardar(); pintarPend(); if(rec.deleted){ eliminarEnSheets(rec); } })
     .catch(function(){ rec.status='pending'; guardar(); pintarPend(); });
   }catch(e){ rec.status='pending'; guardar(); pintarPend(); }
+}
+function eliminarEnSheets(rec){
+  if(!scriptUrl || !rec || !rec.id) return;
+  try{ fetch(scriptUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({accion:'delete', id:rec.id}) }); }catch(e){}
+}
+/* ---------- cronómetro de 60 minutos ---------- */
+var timerInt=null; var DURACION_MIN=60;
+function fmt2(n){ return String(n).padStart(2,'0'); }
+function iniciarTimer(){
+  if(timerInt){ clearInterval(timerInt); }
+  if(!meta.tramoInicio){ meta.tramoInicio=Date.now(); guardar(); }
+  tickTimer(); timerInt=setInterval(tickTimer,1000);
+}
+function tickTimer(){
+  var bar=document.getElementById('timerBar'); if(!bar) return;
+  var rest=meta.tramoInicio+DURACION_MIN*60000-Date.now();
+  var over=rest<0, s=Math.floor(Math.abs(rest)/1000);
+  document.getElementById('timerTime').textContent=(over?'⏱ +':'⏱ ')+fmt2(Math.floor(s/60))+':'+fmt2(s%60);
+  document.getElementById('timerSub').textContent= over?'TRAMO CUMPLIDO — cerrá y abrí uno nuevo':'Tiempo del tramo ('+DURACION_MIN+' min)';
+  bar.style.color = over?'#ff8a8a':(rest<300000?'#ffcf6b':'#3ec9b0');
+  if(over && !meta.avisado){ meta.avisado=true; guardar(); if(navigator.vibrate) navigator.vibrate([200,100,200]); }
 }
 function flush(){ if(!scriptUrl || !navigator.onLine){ pintarPend(); return; }
   log.filter(function(r){return r.status==='pending';}).forEach(function(r){ enviar(r); }); }
@@ -474,9 +502,10 @@ function exportarCSV(){
 }
 
 function nuevoTramo(){
-  var pend=log.filter(function(r){return r.status==='pending';}).length;
+  var pend=log.filter(function(r){return r.status!=='sent';}).length;
   if(pend && !confirm('Hay '+pend+' registro(s) sin enviar. ¿Cerrar el tramo igual? (Se reintentarán solos cuando haya señal)')) return;
-  log=[]; meta.obs='';
+  log=[]; meta.obs=''; meta.tramoInicio=0; meta.avisado=false;
+  if(timerInt){ clearInterval(timerInt); timerInt=null; }
   document.getElementById('setup').classList.remove('hidden');
   document.getElementById('conteo').classList.add('hidden');
   document.getElementById('hdrSub').textContent='Identificación del puesto';
