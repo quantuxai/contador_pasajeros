@@ -134,15 +134,6 @@
       <button data-v="Tarde (13:00-20:00)">Tarde <span style="opacity:.75;font-weight:500;font-size:12px;">13:00-20:00</span></button>
     </div>
 
-    <label>6. Tramo horario de este registro</label>
-    <select id="tramo">
-      <option value="">— Seleccione —</option>
-      <option>06:00-07:00</option><option>07:00-08:00</option><option>08:00-09:00</option>
-      <option>09:00-10:00</option><option>10:00-11:00</option><option>11:00-12:00</option>
-      <option>12:00-13:00</option><option>13:00-14:00</option><option>14:00-15:00</option>
-      <option>15:00-16:00</option><option>16:00-17:00</option><option>17:00-18:00</option>
-      <option>18:00-19:00</option><option>19:00-20:00</option>
-    </select>
 
     <div class="auto">Inicio del registro (automático): <span id="inicioAuto">—</span></div>
     <button class="btn-primary" id="startBtn" onclick="iniciar()" disabled>Iniciar conteo →</button>
@@ -329,6 +320,16 @@ var PARADAS = [
 "c": "DO_P5",
 "n": "Domingo 5 · Avda La Victoria c/Konrad Adenauer Asai Vip San Lorenzo",
 "m": "https://www.google.com/maps/dir/?api=1&destination=-25.385,-57.496"
+},
+{
+"c": "MI_PIL1",
+"n": "PILOTO Miércoles - TOA",
+"m": "https://maps.app.goo.gl/4px2AyM2J5pRbmbS9"
+},
+{
+"c": "MI_PIL2",
+"n": "PILOTO Miércoles - Hipermercado Luisito",
+"m": "https://maps.app.goo.gl/Ke2zpwyBEYxctmGq8"
 }
 ];
 var DIAS = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
@@ -360,13 +361,13 @@ function guardarUrl(){ scriptUrl=document.getElementById('scriptUrl').value.trim
   alert(scriptUrl?'Enlace guardado.':'Enlace borrado. La app contará y guardará local, pero no enviará a Google Sheets.'); }
 
 
+function autoTramo(){ var h=new Date().getHours(); function p(n){return (n<10?'0':'')+n;} return p(h)+':00-'+p(h+1)+':00'; }
 function validar(){
   var ok = document.getElementById('contador').value.trim() && document.getElementById('parada').value.trim() &&
-    meta.sentido && meta.turno && document.getElementById('tramo').value;
+    meta.sentido && meta.turno;
   document.getElementById('startBtn').disabled = !ok;
 }
 document.getElementById('contador').addEventListener('input', validar);
-document.getElementById('tramo').addEventListener('change', validar);
 var cambioVal="No";
 function bindRadio(rowId, cb){
   document.querySelectorAll('#'+rowId+' button').forEach(function(b){
@@ -415,7 +416,7 @@ function elegir(cod){ var p=PARADAS.filter(function(x){return x.c===cod;})[0]; i
 
 function iniciar(){
   meta.contador=document.getElementById('contador').value.trim();
-  meta.cambio=cambioVal; meta.tramo=document.getElementById('tramo').value; meta.inicio=stamp();
+  meta.cambio=cambioVal; meta.tramo=autoTramo(); meta.inicio=stamp();
   meta.tramoInicio=Date.now(); meta.avisado=false;
   guardar(); mostrarConteo();
 }
@@ -510,7 +511,6 @@ function nuevoTramo(){
   document.getElementById('conteo').classList.add('hidden');
   document.getElementById('hdrSub').textContent='Identificación del puesto';
   document.getElementById('contador').value=meta.contador;
-  document.getElementById('tramo').value='';
   document.getElementById('obs').value='';
   if(meta.parada_codigo){ document.getElementById('parada').value=meta.parada_codigo;
     document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||''); }
@@ -524,7 +524,6 @@ function nuevoTramo(){
   document.getElementById('inicioAuto').textContent=stamp();
   if(meta.tramo && meta.contador && meta.parada_codigo && meta.sentido && meta.turno){
     document.getElementById('contador').value=meta.contador;
-    document.getElementById('tramo').value=meta.tramo;
     document.getElementById('parada').value=meta.parada_codigo;
     document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||'');
     cambioVal=meta.cambio||'No';
