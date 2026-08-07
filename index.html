@@ -144,10 +144,6 @@
 <div id="conteo" class="hidden">
   <div class="big-total"><div class="n" id="tTotal">0</div><div class="l">Pasajeros del tramo</div></div>
   <div class="chips" id="chips"></div>
-  <div id="timerBar" style="margin:6px 12px 0;text-align:center;background:#12151a;border:1px solid #2b313b;border-radius:12px;padding:9px;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:#3ec9b0;letter-spacing:1px;">
-    <span id="timerTime">⏱ 60:00</span>
-    <div id="timerSub" style="font-size:11px;font-weight:600;color:#9aa2ad;letter-spacing:.5px;text-transform:uppercase;margin-top:3px;">Tiempo del tramo (60 min)</div>
-  </div>
   <div class="tapwrap">
     <button class="tap-pax" onclick="registrar()">+1 PASAJERO<span class="sub">toque por cada persona que aborda</span></button>
   </div>
@@ -418,7 +414,6 @@ function mostrarConteo(){
   document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+meta.tramo+' · '+meta.contador;
   document.getElementById('chips').textContent = meta.turno;
   document.getElementById('obs').value = meta.obs||'';
-  iniciarTimer();
   render();
 }
 
@@ -458,23 +453,8 @@ function eliminarEnSheets(rec){
   if(!scriptUrl || !rec || !rec.id) return;
   try{ fetch(scriptUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({accion:'delete', id:rec.id}) }); }catch(e){}
 }
-/* ---------- cronómetro de 60 minutos ---------- */
-var timerInt=null; var DURACION_MIN=60;
-function fmt2(n){ return String(n).padStart(2,'0'); }
-function iniciarTimer(){
-  if(timerInt){ clearInterval(timerInt); }
-  if(!meta.tramoInicio){ meta.tramoInicio=Date.now(); guardar(); }
-  tickTimer(); timerInt=setInterval(tickTimer,1000);
-}
-function tickTimer(){
-  var bar=document.getElementById('timerBar'); if(!bar) return;
-  var rest=meta.tramoInicio+DURACION_MIN*60000-Date.now();
-  var over=rest<0, s=Math.floor(Math.abs(rest)/1000);
-  document.getElementById('timerTime').textContent=(over?'⏱ +':'⏱ ')+fmt2(Math.floor(s/60))+':'+fmt2(s%60);
-  document.getElementById('timerSub').textContent= over?'TRAMO CUMPLIDO — cerrá y abrí uno nuevo':'Tiempo del tramo ('+DURACION_MIN+' min)';
-  bar.style.color = over?'#ff8a8a':(rest<300000?'#ffcf6b':'#3ec9b0');
-  if(over && !meta.avisado){ meta.avisado=true; guardar(); if(navigator.vibrate) navigator.vibrate([200,100,200]); }
-}
+/* Cronómetro removido: el tramo se cierra manualmente con "Cerrar tramo / Nuevo tramo". */
+var timerInt=null;
 function flush(){ if(!scriptUrl || !navigator.onLine){ pintarPend(); return; }
   log.filter(function(r){return r.status==='pending';}).forEach(function(r){ enviar(r); }); }
 function reintentar(){ flush(); alert('Reintentando enviar los pendientes...'); }
