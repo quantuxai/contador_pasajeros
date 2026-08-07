@@ -121,14 +121,7 @@
       <button data-v="Sí">Sí</button><button data-v="No" class="on">No</button>
     </div>
 
-    <label>4. Sentido del flujo observado</label>
-    <div class="radio-row" id="sentidoRow">
-      <button data-v="Norte-Sur / Ida">Norte-Sur / Ida</button>
-      <button data-v="Sur-Norte / Vuelta">Sur-Norte / Vuelta</button>
-      <button data-v="Ambos sentidos">Ambos</button>
-    </div>
-
-    <label>5. Turno</label>
+    <label>4. Turno</label>
     <div class="radio-row" id="turnoRow">
       <button data-v="Mañana (06:00-13:00)">Mañana <span style="opacity:.75;font-weight:500;font-size:12px;">06:00-13:00</span></button>
       <button data-v="Tarde (13:00-20:00)">Tarde <span style="opacity:.75;font-weight:500;font-size:12px;">13:00-20:00</span></button>
@@ -364,7 +357,7 @@ function guardarUrl(){ scriptUrl=document.getElementById('scriptUrl').value.trim
 function autoTramo(){ var h=new Date().getHours(); function p(n){return (n<10?'0':'')+n;} return p(h)+':00-'+p(h+1)+':00'; }
 function validar(){
   var ok = document.getElementById('contador').value.trim() && document.getElementById('parada').value.trim() &&
-    meta.sentido && meta.turno;
+    meta.turno;
   document.getElementById('startBtn').disabled = !ok;
 }
 document.getElementById('contador').addEventListener('input', validar);
@@ -376,7 +369,6 @@ function bindRadio(rowId, cb){
   });
 }
 bindRadio('cambioRow', function(v){ cambioVal=v; meta.cambio=v; });
-bindRadio('sentidoRow', function(v){ meta.sentido=v; });
 bindRadio('turnoRow', function(v){ meta.turno=v; });
 
 /* combobox paradas */
@@ -424,7 +416,7 @@ function mostrarConteo(){
   document.getElementById('setup').classList.add('hidden');
   document.getElementById('conteo').classList.remove('hidden');
   document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+meta.tramo+' · '+meta.contador;
-  document.getElementById('chips').textContent = meta.sentido+'  ·  '+meta.turno;
+  document.getElementById('chips').textContent = meta.turno;
   document.getElementById('obs').value = meta.obs||'';
   iniciarTimer();
   render();
@@ -522,13 +514,12 @@ function nuevoTramo(){
   cargar(); pintarRed();
   if(scriptUrl) document.getElementById('scriptUrl').value=scriptUrl;
   document.getElementById('inicioAuto').textContent=stamp();
-  if(meta.tramo && meta.contador && meta.parada_codigo && meta.sentido && meta.turno){
+  if(meta.tramo && meta.contador && meta.parada_codigo && meta.turno){
     document.getElementById('contador').value=meta.contador;
     document.getElementById('parada').value=meta.parada_codigo;
     document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||'');
     cambioVal=meta.cambio||'No';
     document.querySelectorAll('#cambioRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===cambioVal); });
-    document.querySelectorAll('#sentidoRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===meta.sentido); });
     document.querySelectorAll('#turnoRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===meta.turno); });
     mostrarConteo(); flush();
   }
