@@ -105,12 +105,12 @@
     <label>1. Código o nombre del contador</label>
     <input type="text" id="contador" placeholder="Ej: P1-Ana" autocomplete="off">
 
-    <label>Día (ordena las paradas)</label>
-    <select id="dia"></select>
+    <label style="display:none">Día</label>
+    <select id="dia" style="display:none"></select>
 
     <label>2. Parada / estación de trabajo</label>
     <div class="combo-wrap">
-      <input type="text" id="paradaSearch" placeholder="Buscar por día, número o lugar..." autocomplete="off">
+      <input type="text" id="paradaSearch" placeholder="Buscar grupo o lugar..." autocomplete="off">
       <div class="combo-list" id="paradaList"></div>
     </div>
     <input type="hidden" id="parada">
@@ -165,161 +165,10 @@
 
 <script>
 var PARADAS = [
-{
-"c": "LU_P1",
-"n": "Lunes 1 · IPS Central frente al Stock",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.27,-57.584"
-},
-{
-"c": "LU_P2",
-"n": "Lunes 2 · Mcal. Estigarribia Frente a Multiplaza",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.317,-57.572"
-},
-{
-"c": "LU_P3",
-"n": "Lunes 3 · Mcal Lopez y Kubischek ENEX",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.292,-57.603"
-},
-{
-"c": "LU_P4",
-"n": "Lunes 4 · Ruta Trans Chaco y Boquerón Stock MRA Sentido hacia Asunción",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.212,-57.529"
-},
-{
-"c": "MA_P1",
-"n": "Martes 1 · Avda Mcal Lopez c/ Dr Weiss Frente al MIC  Asuncion",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.293,-57.583"
-},
-{
-"c": "MA_P2",
-"n": "Martes 2 · Avda Mcal Lopez y 22 de septiembre .  M.Defensa. Asuncion",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.293,-57.613"
-},
-{
-"c": "MA_P3",
-"n": "Martes 3 · Ruta 2 y Candelaria Super Edward Capiata",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.354,-57.443"
-},
-{
-"c": "MA_P4",
-"n": "Martes 4 · Ruta 3 Trans Chaco y Jara Pastore U. M. Serrana",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.244,-57.547"
-},
-{
-"c": "MI_P1",
-"n": "Miercoles 1 · Avda. Mcal Lopez. Frente a Muni Asunción",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.304,-57.56"
-},
-{
-"c": "MI_P2",
-"n": "Miercoles 2 · Aviadores del Chaco y Santa Teresa, Estacion de servicio de Shoping Galeria",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.283,-57.563"
-},
-{
-"c": "MI_P3",
-"n": "Miercoles 3 · Avda. Mcal Lopez y Kubischeck Embajada EEUU",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.293,-57.604"
-},
-{
-"c": "MI_P4",
-"n": "Miercoles 4 · Avda La Victoria c/Konrad Adenauer Asai Vip San Lorenzo",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.385,-57.496"
-},
-{
-"c": "JU_P1",
-"n": "Jueves 1 · Avda Mcal Lopez y Malutin Shoping Villa Morra",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.294,-57.581"
-},
-{
-"c": "JU_P2",
-"n": "Jueves 2 · Stma Trinida y Sacramento Frente a God Pan Asuncion",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.259,-57.58"
-},
-{
-"c": "JU_P3",
-"n": "Jueves 3 · Avda Rep. Argentina Costado de la Terminal de Buses Asuncion",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.325,-57.596"
-},
-{
-"c": "JU_P4",
-"n": "Jueves 4 · Ruta 2 Mcal Estigarribia Frente a Campus de la UNA",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.339,-57.523"
-},
-{
-"c": "VI_P1",
-"n": "Viernes 1 · Elizardo Aquino c/ Mcal. Estigarribia Bco. Familiar Limpio",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.169,-57.475"
-},
-{
-"c": "VI_P2",
-"n": "Viernes 2 · Ruta 3 Trans Chaco y Telémaco Silvera Frente a Luisito Loma Pyta",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.237,-57.54"
-},
-{
-"c": "VI_P3",
-"n": "Viernes 3 · Avda Mcal Lopez y Cruz del Defensor Manzana T B. Familiar",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.295,-57.579"
-},
-{
-"c": "VI_P4",
-"n": "Viernes 4 · Defensores Del Chaco y Avd F. De  La Mora 4 Mojones Asunción",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.339,-57.585"
-},
-{
-"c": "SA_P1",
-"n": "Sabado 1 · Ruta 3 Trans Chaco c/Mcal Lopez Stock MRA, sentido Limpio ciudad",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.213,-57.529"
-},
-{
-"c": "SA_P2",
-"n": "Sabado 2 · 9 de Agosto e Independencia Nacional Frente a Plazoleta ÑEMBY",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.393,-57.547"
-},
-{
-"c": "SA_P3",
-"n": "Sabado 3 · Ruta 2 Mcal Estigarribia c/ Pastora Cespedes Frente a Salenmma Shoping",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.334,-57.537"
-},
-{
-"c": "SA_P4",
-"n": "Sabado 4 · Humaita y Julio Correa Cerca de S San Cayetano LUQUE",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.27,-57.486"
-},
-{
-"c": "DO_P1",
-"n": "Domingo 1 · Ruta 025 y Ruta 3 Trans Chaco Rotonda sentido hacia Asunción venta de Palets",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.203,-57.525"
-},
-{
-"c": "DO_P2",
-"n": "Domingo 2 · Avda Fernando de la Mora c/ Rep Argentina Frente a la Terminal de Buses de Asunción",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.3267,-57.5966"
-},
-{
-"c": "DO_P3",
-"n": "Domingo 3 · Sicilia entre Colon y Montevideo (poquisima frecuencia en toda la semana) Asuncion",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.289,-57.648"
-},
-{
-"c": "DO_P4",
-"n": "Domingo 4 · Avda. Defensores del Chaco y Progreso Entre Super Edward y Luisito Asuncion",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.338,-57.5832"
-},
-{
-"c": "DO_P5",
-"n": "Domingo 5 · Avda La Victoria c/Konrad Adenauer Asai Vip San Lorenzo",
-"m": "https://www.google.com/maps/dir/?api=1&destination=-25.385,-57.496"
-},
-{
-"c": "MI_PIL1",
-"n": "PILOTO - Miercoles - TOA",
-"m": "https://maps.app.goo.gl/4px2AyM2J5pRbmbS9"
-},
-{
-"c": "MI_PIL2",
-"n": "PILOTO - Miercoles - Hipermercado Luisito",
-"m": "https://maps.app.goo.gl/Ke2zpwyBEYxctmGq8"
-}
+{"c": "G1", "n": "Grupo 1 - SHOPING MARIANO", "m": ""},
+{"c": "G2", "n": "Grupo 2 - HIPER EL PUEBLO ZAVALAS CUE (frente al S. Guarani)", "m": ""},
+{"c": "G3", "n": "Grupo 3 - SHOPING PINEDO (parada sentido saliendo de Asunción hacia San Lorenzo)", "m": ""},
+{"c": "G4", "n": "Grupo 4 - SHOPING DEL SOL", "m": ""}
 ];
 var DIAS = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
 var DIA_PREF = {Lunes:"LU_",Martes:"MA_",Miercoles:"MI_",Jueves:"JU_",Viernes:"VI_",Sabado:"SA_",Domingo:"DO_"};
@@ -384,7 +233,7 @@ function filtrar(q){ q=(q||'').trim().toLowerCase(); var pref=DIA_PREF[document.
 function mostrarLista(q){ var r=filtrar(q), box=document.getElementById('paradaList'), html='';
   function g(t,a,l){ if(!a.length) return ''; var s='<div class="combo-group">'+t+'</div>';
     a.slice(0,l).forEach(function(p){ s+='<div class="combo-item" data-c="'+p.c+'"><span class="cc">'+p.c+'</span> — <span class="nn">'+(p.n||'')+'</span></div>'; }); return s; }
-  html+=g('Paradas del día', r.pd, 10); if(q) html+=g('Paradas (otros días)', r.po, 10); html+=g('Otras paradas', r.rf, 40);
+  html+=g('Paradas del día', r.pd, 10); if(q) html+=g('Paradas (otros días)', r.po, 10); html+=g('Paradas', r.rf, 40);
   if(!html) html='<div class="combo-item">Sin resultados</div>';
   box.innerHTML=html; box.classList.add('open');
   box.querySelectorAll('.combo-item[data-c]').forEach(function(it){ it.onclick=function(){ elegir(it.dataset.c); }; });
