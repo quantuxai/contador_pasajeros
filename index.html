@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Contador de Pasajeros — AMA</title>
+<title>Contador de Pasajeros — Panamá</title>
 <style>
   * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body { margin:0; padding:0; }
@@ -83,6 +83,24 @@
   .export-row button { flex:1; background:#16855c; color:#fff; border:none; border-radius:12px;
     padding:14px; font-size:15px; font-weight:700; cursor:pointer; }
   .chips { font-size:12px; color:#9aa2ad; margin:2px 12px 8px; text-align:center; }
+  .state-tag { text-align:center; font-size:12px; font-weight:700; letter-spacing:.5px;
+    text-transform:uppercase; margin:2px 12px 8px; }
+  .state-tag.off { color:#ffcf6b; } .state-tag.on { color:#7bd88a; }
+  .period-info { margin:0 12px 10px; display:flex; gap:8px; }
+  .period-info .box { flex:1; text-align:center; background:#12151a; border:1px solid #2b313b;
+    border-radius:10px; padding:8px 4px; }
+  .period-info .box .k { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:#9aa2ad; }
+  .period-info .box .v { font-size:17px; font-weight:800; color:#7fe3d3;
+    font-variant-numeric:tabular-nums; margin-top:2px; }
+  .period-ctl { margin:0 12px 6px; }
+  .period-ctl button { width:100%; border:none; border-radius:16px; padding:17px;
+    font-size:18px; font-weight:800; cursor:pointer; transition:transform .05s, filter .1s; }
+  .period-ctl button:active { transform:scale(.98); }
+  .period-ctl .start { background:linear-gradient(135deg,#12b28f,#2fe0bd); color:#062b25;
+    box-shadow:0 6px 18px rgba(20,180,150,.35); }
+  .period-ctl .stop { background:linear-gradient(135deg,#e05353,#ff7a7a); color:#2b0707;
+    box-shadow:0 6px 18px rgba(224,83,83,.35); }
+  .tap-pax:disabled { filter:grayscale(.75) brightness(.55); cursor:not-allowed; box-shadow:none; }
 </style>
 </head>
 <body>
@@ -91,7 +109,7 @@
     <div class="logo">🚌</div>
     <div class="brand-txt">
       <h1>Contador de Pasajeros</h1>
-      <div class="tag">Área Metropolitana de Asunción · AMA</div>
+      <div class="tag">Área Metropolitana de Panamá</div>
     </div>
     <div class="net off" id="netBadge">sin conexión</div>
   </div>
@@ -129,7 +147,7 @@
 
 
     <div class="auto">Inicio del registro (automático): <span id="inicioAuto">—</span></div>
-    <button class="btn-primary" id="startBtn" onclick="iniciar()" disabled>Iniciar conteo →</button>
+    <button class="btn-primary" id="startBtn" onclick="iniciar()" disabled>Continuar →</button>
     <!-- Enlace de Google Sheets fijo en el código (config oculto en producción) -->
     <div id="configBox" class="hidden" style="margin-top:10px;">
       <label>URL del Web App (Apps Script)</label>
@@ -144,10 +162,15 @@
 <div id="conteo" class="hidden">
   <div class="big-total"><div class="n" id="tTotal">0</div><div class="l">Pasajeros del tramo</div></div>
   <div class="chips" id="chips"></div>
-  <div class="tapwrap">
-    <button class="tap-pax" onclick="registrar()">+1 PASAJERO<span class="sub">toque por cada persona que aborda</span></button>
+  <div class="state-tag off" id="stateTag">Conteo sin iniciar</div>
+  <div class="period-info">
+    <div class="box"><div class="k">Inicio</div><div class="v" id="piInicio">—</div></div>
+    <div class="box"><div class="k">Transcurrido</div><div class="v" id="piElapsed">00:00</div></div>
   </div>
-  <div class="last" id="lastMsg">Toca el botón por cada pasajero que sube al bus.</div>
+  <div class="tapwrap">
+    <button class="tap-pax" id="tapBtn" onclick="registrar()">+1 PASAJERO<span class="sub">toque por cada persona que aborda</span></button>
+  </div>
+  <div class="last" id="lastMsg">Pulsa “Iniciar conteo” para comenzar el tramo.</div>
   <div class="pend" id="pendMsg"></div>
   <div class="toolbar">
     <button onclick="deshacer()">↩ Deshacer último</button>
@@ -159,32 +182,58 @@
     <div class="export-row">
       <button onclick="reintentar()" style="background:#0d9488;">⟳ Reenviar pendientes</button>
     </div>
-    <button class="btn-primary" style="margin-top:10px;background:#7c3aed;" onclick="nuevoTramo()">✓ Cerrar y nuevo tramo</button>
+    <button class="btn-primary" style="margin-top:10px;background:#7c3aed;" onclick="nuevoTramo()">↺ Cambiar parada / contador</button>
   </div>
 </div>
 
 <script>
 var PARADAS = [
-{"c": "G1", "n": "SHOPING VILLA MORRA (saliendo San Lorenzo)", "m": ""},
-{"c": "G2", "n": "frente a la terminal salida de Asuncion", "m": ""},
-{"c": "G3", "n": "FRENTE A LA UNA entrada a Asuncion", "m": ""},
-{"c": "G4", "n": "S Sacramento,IGLESIA DE TRINIDAD", "m": ""}
+{"c": "Lun_P1", "n": "Metro Villa Zaita-I", "m": "https://www.google.com/maps?q=9.079842,-79.356695"},
+{"c": "Lun_P2", "n": "Alajuela-R", "m": "https://www.google.com/maps?q=9.02792,-79.507166"},
+{"c": "Lun_P3", "n": "Gran Estacion - Bahia A", "m": "https://www.google.com/maps?q=9.030284,-79.491553"},
+{"c": "Lun_P4", "n": "Metro Cincuentenario-R", "m": "https://www.google.com/maps?q=9.079782,-79.527075"},
+{"c": "Mar_P1", "n": "Balboa-R (Troncal)*", "m": "https://www.google.com/maps?q=9.050935,-79.450451"},
+{"c": "Mar_P2", "n": "Metro San Isidro-R-Puerta 12", "m": "https://www.google.com/maps?q=9.029435,-79.506964"},
+{"c": "Mar_P3", "n": "ZP Torrijos Carter - Puerta 1", "m": "https://www.google.com/maps?q=9.07816,-79.492093"},
+{"c": "Mar_P4", "n": "Inter. Metro Nvo. Tocumen-I-Puerta 06", "m": "https://www.google.com/maps?q=9.102062,-79.353636"},
+{"c": "Mie_P1", "n": "Metro Loteria", "m": "https://www.google.com/maps?q=9.078935,-79.400562"},
+{"c": "Mie_P2", "n": "Entrada Villa Don Bosco-I", "m": "https://www.google.com/maps?q=9.031334,-79.491449"},
+{"c": "Mie_P3", "n": "Los Andes-I - (Troncal)*", "m": "https://www.google.com/maps?q=9.048886,-79.508065"},
+{"c": "Mie_P4", "n": "Balmoral-I", "m": "https://www.google.com/maps?q=9.059213,-79.432333"},
+{"c": "Jue_P2", "n": "Albrook - Bahia A", "m": "https://www.google.com/maps?q=8.973854,-79.551737"},
+{"c": "Jue_P4", "n": "24 de diciembre 2  -Troncal*", "m": "https://www.google.com/maps?q=8.961476,-79.539079"},
+{"c": "Jue_P5", "n": "CC El Dorado-I - Bahia 2", "m": "https://www.google.com/maps?q=9.009534,-79.534123"},
+{"c": "Jue_P8", "n": "Albrook - Bahia C", "m": "https://www.google.com/maps?q=8.975731,-79.551662"},
+{"c": "Vie_P1", "n": "Metro Villa Zaita-I", "m": "https://www.google.com/maps?q=9.079564,-79.526522"},
+{"c": "Vie_P2", "n": "Las Colinas-I (Troncal)*", "m": "https://www.google.com/maps?q=9.050097,-79.509193"},
+{"c": "Vie_P5", "n": "Metro 12 de Octubre-R", "m": "https://www.google.com/maps?q=9.103269,-79.37021"},
+{"c": "Vie_P6", "n": "Albrook - Bahia B", "m": "https://www.google.com/maps?q=8.975104,-79.551617"},
+{"c": "Sab_P4", "n": "Cerro Viento-I - Bahia A -Troncal*", "m": "https://www.google.com/maps?q=9.050487,-79.450427"},
+{"c": "Sab_P5", "n": "5 de mayo Troncal*", "m": "https://www.google.com/maps?q=9.024393,-79.486468"},
+{"c": "Sab_P6", "n": "Muelle Gamboa-R", "m": "https://www.google.com/maps?q=8.986878,-79.51266"},
+{"c": "Sab_P11", "n": "5 de mayo Corredor*", "m": "https://www.google.com/maps?q=8.961749,-79.539268"},
+{"c": "Dom_P7", "n": "Metro Brisas del Golf-R", "m": "https://www.google.com/maps?q=9.031035,-79.491336"},
+{"c": "Dom_P8", "n": "Alajuela-R", "m": "https://www.google.com/maps?q=8.973217,-79.551777"},
+{"c": "Dom_P9", "n": "ZP 24 de Diciembre 2 - Puerta 1", "m": "https://www.google.com/maps?q=9.103266,-79.366524"},
+{"c": "Dom_P12", "n": "Central T Chorrillo", "m": "https://www.google.com/maps?q=8.975609,-79.516371"}
 ];
 var DIAS = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
-var DIA_PREF = {Lunes:"LU_",Martes:"MA_",Miercoles:"MI_",Jueves:"JU_",Viernes:"VI_",Sabado:"SA_",Domingo:"DO_"};
+var DIA_PREF = {Lunes:"Lun_",Martes:"Mar_",Miercoles:"Mie_",Jueves:"Jue_",Viernes:"Vie_",Sabado:"Sab_",Domingo:"Dom_"};
 
-var meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", sentido:"", turno:"", tramo:"", inicio:"", obs:"", tramoInicio:0, avisado:false };
-var log = [];
+var meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", sentido:"", turno:"", tramo:"", inicio:"", obs:"", tramoInicio:0, avisado:false, horaInicio:"", horaFin:"", periodoActivo:false, periodoId:"" };
+var log = [];        // registros CONTEO del período en curso
+var markers = [];    // marcadores INICIO / RESUMEN pendientes o enviados
 var scriptUrl = "";
 var deviceId = "";
 
 function cargar(){
-  try{ var s=JSON.parse(localStorage.getItem('cp_state')||'null'); if(s){ meta=s.meta||meta; log=s.log||[]; } }catch(e){}
+  try{ var s=JSON.parse(localStorage.getItem('cp_state')||'null'); if(s){ meta=s.meta||meta; log=s.log||[]; markers=s.markers||[]; } }catch(e){}
   scriptUrl = localStorage.getItem('cp_url')||"https://script.google.com/macros/s/AKfycbzPzPmLaxleKPbdF-xr7dwSK-dCczgZEca59wDebnrnm8fp9nT493UAfoE_IgIRQMAHhQ/exec";
   deviceId = localStorage.getItem('cp_device');
   if(!deviceId){ deviceId='D'+Math.random().toString(36).slice(2,8).toUpperCase(); localStorage.setItem('cp_device',deviceId); }
 }
-function guardar(){ try{ localStorage.setItem('cp_state', JSON.stringify({meta:meta,log:log})); }catch(e){} }
+function guardar(){ try{ localStorage.setItem('cp_state', JSON.stringify({meta:meta,log:log,markers:markers})); }catch(e){} }
+function fmt2(n){ return String(n).padStart(2,'0'); }
 function ahoraHMS(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');}; return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
 function hoyFecha(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
 function stamp(){ return hoyFecha()+' '+ahoraHMS(); }
@@ -223,7 +272,7 @@ bindRadio('turnoRow', function(v){ meta.turno=v; });
   sel.value=map[new Date().getDay()];
   sel.addEventListener('change', function(){ if(!document.getElementById('paradaSearch').value.trim()) mostrarLista(''); });
 })();
-function esPresel(p){ return /_P/.test(p.c) && /^(LU|MA|MI|JU|VI|SA|DO)_/.test(p.c); }
+function esPresel(p){ return /_P/.test(p.c) && /^(Lun|Mar|Mie|Jue|Vie|Sab|Dom)_/.test(p.c); }
 function filtrar(q){ q=(q||'').trim().toLowerCase(); var pref=DIA_PREF[document.getElementById('dia').value];
   var pd=[],po=[],rf=[];
   PARADAS.forEach(function(p){ if(q && (p.c+' '+(p.n||'')).toLowerCase().indexOf(q)<0) return;
@@ -253,23 +302,85 @@ function elegir(cod){ var p=PARADAS.filter(function(x){return x.c===cod;})[0]; i
 
 function iniciar(){
   meta.contador=document.getElementById('contador').value.trim();
-  meta.cambio=cambioVal; meta.tramo=autoTramo(); meta.inicio=stamp();
-  meta.tramoInicio=Date.now(); meta.avisado=false;
-  guardar(); mostrarConteo();
+  meta.cambio=cambioVal; meta.inicio=stamp();
+  meta.motivoInicio = meta.pendienteCambio ? 'R' : 'I';   // I=Inicio de turno · R=cambio de parada/contador
+  meta.pendienteCambio=false;
+  meta.turnoId='TURNO'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
+  meta.turnoHora=ahoraHMS();
+  guardar();
+  enviarInicioTurno();   // registra la marca (I o R) aunque no pase nadie
+  mostrarConteo();
+  var el=document.getElementById('lastMsg');
+  if(el) el.innerHTML='✓ '+(meta.motivoInicio==='R'?'Cambio de parada/contador (R)':'Inicio de turno (I)')+' registrado a las <b>'+meta.turnoHora+'</b> (aún sin conteo). Pulsa “▶ Iniciar conteo” cuando comiences.';
+}
+function enviarInicioTurno(){
+  var esR = meta.motivoInicio==='R';
+  var obs = esR ? 'R = CAMBIO DE PARADA/CONTADOR (marca de asistencia, no es conteo)'
+                : 'I = INICIO DE TURNO (marca de asistencia, no es conteo)';
+  var rec={ id:meta.turnoId, tipo:'INICIO_TURNO', fecha:hoyFecha(), hora:meta.turnoHora||ahoraHMS(),
+    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
+    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:autoTramo(),
+    hora_inicio:meta.turnoHora||ahoraHMS(), hora_fin:'', total:'', periodo_id:meta.turnoId,
+    observaciones:obs, dispositivo:deviceId, status:'pending' };
+  markers.push(rec); guardar(); enviar(rec);
 }
 function mostrarConteo(){
   document.getElementById('setup').classList.add('hidden');
   document.getElementById('conteo').classList.remove('hidden');
-  document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+meta.tramo+' · '+meta.contador;
+  document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+(meta.tramo||meta.turno)+' · '+meta.contador;
   document.getElementById('chips').textContent = meta.turno;
   document.getElementById('obs').value = meta.obs||'';
-  render();
+  if(!meta.periodoActivo){ iniciarPeriodo(); }   // el conteo arranca automáticamente al entrar
+  else { render(); pintarPeriodo(); iniciarElapsed(); }
 }
 
+/* ---------- período de conteo (arranca automáticamente) ---------- */
+var elapsedInt=null;
+function iniciarPeriodo(){
+  markers = markers.filter(function(r){ return r.status!=='sent'; });  // poda de marcadores ya enviados
+  log=[];                                                              // nuevo período limpio
+  meta.periodoActivo=true;
+  meta.periodoId='T'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
+  meta.horaInicio=ahoraHMS(); meta.horaFin='';
+  meta.tramo=autoTramo(); meta.tramoInicio=Date.now();
+  guardar();
+  /* No se registra nada al iniciar: el primer envío ocurre al primer toque de +1 pasajero. */
+  document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+meta.tramo+' · '+meta.contador;
+  document.getElementById('lastMsg').innerHTML='Conteo iniciado a las <b>'+meta.horaInicio+'</b>. Toca +1 por cada pasajero.';
+  pintarPeriodo(); render(); iniciarElapsed();
+}
+function finalizarPeriodo(){
+  if(!meta.periodoActivo) return;
+  var tot=log.length;
+  meta.horaFin=ahoraHMS(); meta.periodoActivo=false;
+  if(elapsedInt){ clearInterval(elapsedInt); elapsedInt=null; }
+  enviarResumen(tot);   // envía el total del tramo (0 si no hubo movimiento)
+  guardar();
+  if(navigator.vibrate) navigator.vibrate([60,40,60]);
+  document.getElementById('lastMsg').innerHTML='Tramo finalizado: <b>'+tot+'</b> pasajero(s) · '+meta.horaInicio+'–'+meta.horaFin+'.';
+  pintarPeriodo();
+}
+function pintarPeriodo(){
+  var tap=document.getElementById('tapBtn'), tag=document.getElementById('stateTag');
+  if(!tag) return;
+  document.getElementById('piInicio').textContent=meta.horaInicio||'—';
+  if(meta.periodoActivo){
+    if(tap) tap.disabled=false; tag.textContent='● Conteo en curso'; tag.className='state-tag on';
+  } else {
+    if(tap) tap.disabled=true; tag.textContent='Conteo sin iniciar'; tag.className='state-tag off';
+    document.getElementById('piElapsed').textContent='00:00';
+  }
+}
+function iniciarElapsed(){ if(elapsedInt) clearInterval(elapsedInt); tickElapsed(); elapsedInt=setInterval(tickElapsed,1000); }
+function tickElapsed(){ var el=document.getElementById('piElapsed'); if(!el||!meta.tramoInicio) return;
+  var s=Math.floor((Date.now()-meta.tramoInicio)/1000); el.textContent=fmt2(Math.floor(s/60))+':'+fmt2(s%60); }
+
 function registrar(){
-  var rec={ id:Date.now()+'_'+Math.random().toString(36).slice(2,6), fecha:hoyFecha(), hora:ahoraHMS(),
+  if(!meta.periodoActivo){ alert('Primero pulsa “▶ Iniciar conteo”.'); return; }
+  var rec={ id:Date.now()+'_'+Math.random().toString(36).slice(2,6), tipo:'CONTEO', fecha:hoyFecha(), hora:ahoraHMS(),
     contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
     cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:meta.tramo,
+    hora_inicio:meta.horaInicio, hora_fin:'', total:'', periodo_id:meta.periodoId,
     observaciones:document.getElementById('obs')?document.getElementById('obs').value:'',
     dispositivo:deviceId, status:'pending' };
   log.push(rec); guardar();
@@ -277,21 +388,56 @@ function registrar(){
   document.getElementById('lastMsg').innerHTML='Último pasajero: <b>'+rec.hora+'</b>';
   render(); enviar(rec);
 }
-function deshacer(){ if(!log.length) return; var rec=log.pop(); guardar();
-  if(rec.status==='sent'){ eliminarEnSheets(rec); } else if(rec.status==='sending'){ rec.deleted=true; }
-  document.getElementById('lastMsg').textContent='Se deshizo el último.'; render(); }
+function deshacer(){ if(!log.length){ document.getElementById('lastMsg').textContent='No hay registros que deshacer.'; return; }
+  var rec=log.pop(); guardar();
+  if(rec.status==='sent' || rec.status==='sending'){ anularEnSheets(rec); }
+  document.getElementById('lastMsg').textContent='Se deshizo el último (registrado como corrección).'; render(); }
+/* Deshacer: deja UNA sola fila ANULADO reusando la MISMA id del original.
+   Se borra el original y se envía la corrección con su id; al reusar la id, la
+   de-duplicación evita que el original (fila en blanco) reaparezca o se duplique. */
+function anularEnSheets(orig){
+  if(!orig || !orig.id) return;
+  var rec={ id:orig.id+'_ANUL', anula_id:orig.id, accion:'anular', tipo:'ANULADO', fecha:hoyFecha(), hora:ahoraHMS(),
+    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
+    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:meta.tramo,
+    hora_inicio:meta.horaInicio, hora_fin:'', total:'', periodo_id:meta.periodoId,
+    observaciones:'REGISTRO DESHECHO (corrección, no es conteo) — anula pasajero de las '+(orig.hora||''),
+    dispositivo:deviceId, status:'pending' };
+  markers = markers.filter(function(m){ return m.id!==rec.id; });
+  markers.push(rec); guardar(); enviar(rec);
+}
 function reiniciar(){ if(!log.length) return;
   if(confirm('¿Reiniciar el conteo local de este tramo? (No borra lo ya enviado a Google Sheets)')){ log=[]; guardar(); render(); } }
 function render(){ document.getElementById('tTotal').textContent=log.length; pintarPend(); }
-function pintarPend(){ var pend=log.filter(function(r){return r.status!=='sent';}).length; var el=document.getElementById('pendMsg');
+function pendientes(){ return log.filter(function(r){return r.status!=='sent';}).length + markers.filter(function(r){return r.status!=='sent';}).length; }
+function pintarPend(){ var pend=pendientes(); var el=document.getElementById('pendMsg');
   if(!scriptUrl){ el.innerHTML='<span class="w">⚠ Sin enlace de Google Sheets — guardando solo local.</span>'; return; }
   el.innerHTML = pend? '<span class="w">⏳ '+pend+' pendiente(s) de enviar</span>' : '<span class="ok">✓ todo enviado</span>'; }
+
+/* Marcadores INICIO / RESUMEN: garantizan que el tramo quede registrado aunque no pase nadie */
+function enviarMarcador(tipo){
+  var rec={ id:meta.periodoId+'_'+tipo, tipo:tipo, fecha:hoyFecha(), hora:meta.horaInicio||ahoraHMS(),
+    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
+    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:meta.tramo,
+    hora_inicio:meta.horaInicio, hora_fin:'', total:'', periodo_id:meta.periodoId,
+    observaciones:'', dispositivo:deviceId, status:'pending' };
+  markers.push(rec); guardar(); enviar(rec);
+}
+function enviarResumen(tot){
+  var rec={ id:meta.periodoId+'_RESUMEN', tipo:'RESUMEN', fecha:hoyFecha(), hora:meta.horaFin||ahoraHMS(),
+    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
+    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:meta.tramo,
+    hora_inicio:meta.horaInicio, hora_fin:meta.horaFin, total:(tot==null?log.length:tot), periodo_id:meta.periodoId,
+    observaciones:document.getElementById('obs')?document.getElementById('obs').value:'',
+    dispositivo:deviceId, status:'pending' };
+  markers.push(rec); guardar(); enviar(rec);
+}
 
 function enviar(rec){
   if(!scriptUrl || !navigator.onLine){ pintarPend(); return; }
   if(rec.status==='sent' || rec.status==='sending'){ return; }
   rec.status='sending'; guardar(); pintarPend();
-  var payload={}; for(var k in rec){ if(k!=='status') payload[k]=rec[k]; } payload.accion='add';
+  var payload={}; for(var k in rec){ if(k!=='status') payload[k]=rec[k]; } if(!payload.accion){ payload.accion='add'; }
   try{
     fetch(scriptUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) })
     .then(function(){ rec.status='sent'; guardar(); pintarPend(); if(rec.deleted){ eliminarEnSheets(rec); } })
@@ -305,18 +451,20 @@ function eliminarEnSheets(rec){
 /* Cronómetro removido: el tramo se cierra manualmente con "Cerrar tramo / Nuevo tramo". */
 var timerInt=null;
 function flush(){ if(!scriptUrl || !navigator.onLine){ pintarPend(); return; }
-  log.filter(function(r){return r.status==='pending';}).forEach(function(r){ enviar(r); }); }
+  log.filter(function(r){return r.status==='pending';}).forEach(function(r){ enviar(r); });
+  markers.filter(function(r){return r.status==='pending';}).forEach(function(r){ enviar(r); }); }
 function reintentar(){ flush(); alert('Reintentando enviar los pendientes...'); }
 setInterval(flush, 20000);
 
 document.getElementById('obs').addEventListener('input', function(){ meta.obs=this.value; guardar(); });
 
 function exportarCSV(){
-  if(!log.length){ alert('No hay registros.'); return; }
+  if(!log.length && !markers.length){ alert('No hay registros.'); return; }
   var esc=function(v){ v=String(v==null?'':v); return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
-  var h=['Fecha','Hora','Contador','Parada_Codigo','Parada_Nombre','Cambio_Parada','Sentido','Turno','Tramo_Horario','Observaciones','ID_dispositivo','Estado_envio'];
+  var h=['Tipo','Fecha','Hora','Contador','Parada_Codigo','Parada_Nombre','Cambio_Parada','Sentido','Turno','Tramo_Horario','Hora_Inicio','Hora_Fin','Total','Observaciones','ID_dispositivo','Estado_envio'];
   var lines=[h.join(',')];
-  log.forEach(function(r){ lines.push([r.fecha,r.hora,r.contador,r.parada_codigo,r.parada_nombre,r.cambio_parada,r.sentido,r.turno,r.tramo,r.observaciones,r.dispositivo,r.status].map(esc).join(',')); });
+  var todos=markers.concat(log);
+  todos.forEach(function(r){ lines.push([r.tipo||'CONTEO',r.fecha,r.hora,r.contador,r.parada_codigo,r.parada_nombre,r.cambio_parada,r.sentido,r.turno,r.tramo,r.hora_inicio||'',r.hora_fin||'',(r.total==null?'':r.total),r.observaciones,r.dispositivo,r.status].map(esc).join(',')); });
   var blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='pasajeros_'+(meta.parada_codigo||'').replace(/[^A-Za-z0-9]/g,'')+'_'+(meta.tramo||'').replace(/[^0-9]/g,'')+'.csv';
@@ -324,9 +472,16 @@ function exportarCSV(){
 }
 
 function nuevoTramo(){
-  var pend=log.filter(function(r){return r.status!=='sent';}).length;
-  if(pend && !confirm('Hay '+pend+' registro(s) sin enviar. ¿Cerrar el tramo igual? (Se reintentarán solos cuando haya señal)')) return;
+  if(meta.periodoActivo){
+    if(!confirm('El conteo está en curso. ¿Finalizar este tramo y cambiar de parada/contador?')) return;
+    finalizarPeriodo();
+  }
+  var pend=pendientes();
+  if(pend && !confirm('Hay '+pend+' registro(s) sin enviar. ¿Continuar igual? (Se reintentarán solos cuando haya señal)')) return;
   log=[]; meta.obs=''; meta.tramoInicio=0; meta.avisado=false;
+  meta.periodoActivo=false; meta.horaInicio=''; meta.horaFin='';
+  meta.pendienteCambio=true;   // el próximo inicio se marca como R (cambio de parada/contador)
+  if(elapsedInt){ clearInterval(elapsedInt); elapsedInt=null; }
   if(timerInt){ clearInterval(timerInt); timerInt=null; }
   document.getElementById('setup').classList.remove('hidden');
   document.getElementById('conteo').classList.add('hidden');
@@ -343,14 +498,14 @@ function nuevoTramo(){
   cargar(); pintarRed();
   if(scriptUrl) document.getElementById('scriptUrl').value=scriptUrl;
   document.getElementById('inicioAuto').textContent=stamp();
-  if(meta.tramo && meta.contador && meta.parada_codigo && meta.turno){
+  if(meta.contador && meta.parada_codigo && meta.turno){
     document.getElementById('contador').value=meta.contador;
     document.getElementById('parada').value=meta.parada_codigo;
     document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||'');
     cambioVal=meta.cambio||'No';
     document.querySelectorAll('#cambioRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===cambioVal); });
     document.querySelectorAll('#turnoRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===meta.turno); });
-    mostrarConteo(); flush();
+    flush();   /* siempre inicia en la pantalla de Identificación; los datos quedan precargados */
   }
   validar();
 })();
