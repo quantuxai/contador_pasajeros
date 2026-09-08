@@ -134,12 +134,7 @@
     <input type="hidden" id="parada">
     <div class="sel-badge" id="paradaSel"></div>
 
-    <label>3. ¿Está aquí por cambio de parada (protocolo de baja afluencia)?</label>
-    <div class="radio-row" id="cambioRow">
-      <button data-v="Sí">Sí</button><button data-v="No" class="on">No</button>
-    </div>
-
-    <label>4. Turno</label>
+    <label>3. Turno</label>
     <div class="radio-row" id="turnoRow">
       <button data-v="Mañana (06:00-13:00)">Mañana <span style="opacity:.75;font-weight:500;font-size:12px;">06:00-13:00</span></button>
       <button data-v="Tarde (13:00-20:00)">Tarde <span style="opacity:.75;font-weight:500;font-size:12px;">13:00-20:00</span></button>
@@ -182,8 +177,16 @@
     <div class="export-row">
       <button onclick="reintentar()" style="background:#0d9488;">⟳ Reenviar pendientes</button>
     </div>
-    <button class="btn-primary" style="margin-top:10px;background:#7c3aed;" onclick="nuevoTramo()">↺ Cambiar parada / contador</button>
+    <button class="btn-primary" style="margin-top:10px;background:#7c3aed;" onclick="nuevoTramo()">↺ Cambio de contador o cierre de la app</button>
   </div>
+</div>
+
+<!-- Pantalla de bloqueo: jornada de 7 h finalizada -->
+<div id="jornadaOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#0b1220;color:#e5e7eb;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;">
+  <div style="font-size:52px;line-height:1;margin-bottom:14px;">✅</div>
+  <div style="font-size:22px;font-weight:800;color:#5eead4;">Jornada finalizada</div>
+  <div style="font-size:15px;margin-top:10px;max-width:340px;opacity:.9;">Se cumplieron las <b>7 horas</b> de la jornada. El conteo se cerró y los datos se enviaron automáticamente. Puede cerrar la aplicación o iniciar una nueva jornada.</div>
+  <button class="btn-primary" style="margin-top:22px;background:#16855c;max-width:320px;" onclick="nuevaJornada()">Iniciar nueva jornada</button>
 </div>
 
 <script>
@@ -220,7 +223,7 @@ var PARADAS = [
 var DIAS = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
 var DIA_PREF = {Lunes:"Lun_",Martes:"Mar_",Miercoles:"Mie_",Jueves:"Jue_",Viernes:"Vie_",Sabado:"Sab_",Domingo:"Dom_"};
 
-var meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", sentido:"", turno:"", tramo:"", inicio:"", obs:"", tramoInicio:0, avisado:false, horaInicio:"", horaFin:"", periodoActivo:false, periodoId:"" };
+var meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", sentido:"", turno:"", tramo:"", inicio:"", obs:"", tramoInicio:0, avisado:false, horaInicio:"", horaFin:"", periodoActivo:false, periodoId:"", jornadaInicio:0, jornadaCerrada:false };
 var log = [];        // registros CONTEO del período en curso
 var markers = [];    // marcadores INICIO / RESUMEN pendientes o enviados
 var scriptUrl = "";
@@ -255,14 +258,12 @@ function validar(){
   document.getElementById('startBtn').disabled = !ok;
 }
 document.getElementById('contador').addEventListener('input', validar);
-var cambioVal="No";
 function bindRadio(rowId, cb){
   document.querySelectorAll('#'+rowId+' button').forEach(function(b){
     b.onclick=function(){ document.querySelectorAll('#'+rowId+' button').forEach(function(x){x.classList.remove('on');});
       b.classList.add('on'); cb(b.dataset.v); validar(); };
   });
 }
-bindRadio('cambioRow', function(v){ cambioVal=v; meta.cambio=v; });
 bindRadio('turnoRow', function(v){ meta.turno=v; });
 
 /* combobox paradas */
@@ -302,8 +303,12 @@ function elegir(cod){ var p=PARADAS.filter(function(x){return x.c===cod;})[0]; i
 
 function iniciar(){
   meta.contador=document.getElementById('contador').value.trim();
-  meta.cambio=cambioVal; meta.inicio=stamp();
-  meta.motivoInicio = meta.pendienteCambio ? 'R' : 'I';   // I=Inicio de turno · R=cambio de parada/contador
+  // Arranca (o re-arma) la jornada de 7 h. Si la jornada guardada ya venció o quedó vieja, empieza una nueva.
+  var _ahora=Date.now();
+  if(!meta.jornadaInicio || (_ahora-meta.jornadaInicio) > JORNADA_MS){ meta.jornadaInicio=_ahora; meta.jornadaCerrada=false; }
+  meta.inicio=stamp();
+  meta.motivoInicio = meta.pendienteCambio ? 'R' : 'I';   // I=Inicio de turno · R=cambio de parada/contador (automático)
+  meta.cambio = meta.pendienteCambio ? 'Sí' : 'No';       // se deriva del motivo, ya no de un campo manual
   meta.pendienteCambio=false;
   meta.turnoId='TURNO'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
   meta.turnoHora=ahoraHMS();
@@ -374,6 +379,47 @@ function pintarPeriodo(){
 function iniciarElapsed(){ if(elapsedInt) clearInterval(elapsedInt); tickElapsed(); elapsedInt=setInterval(tickElapsed,1000); }
 function tickElapsed(){ var el=document.getElementById('piElapsed'); if(!el||!meta.tramoInicio) return;
   var s=Math.floor((Date.now()-meta.tramoInicio)/1000); el.textContent=fmt2(Math.floor(s/60))+':'+fmt2(s%60); }
+
+/* ===== Cierre automático de la jornada a las 7 horas ===== */
+var JORNADA_MS = 7*60*60*1000;   // 7 horas
+function vigilarJornada(){
+  if(meta.jornadaCerrada || !meta.jornadaInicio) return;
+  // Solo aplica cuando el trabajador ya está en la pantalla de conteo (jornada en marcha).
+  var enConteo = !document.getElementById('conteo').classList.contains('hidden');
+  if(!enConteo) return;
+  if(Date.now()-meta.jornadaInicio >= JORNADA_MS) cerrarJornada();
+}
+function cerrarJornada(){
+  if(meta.jornadaCerrada) return;
+  meta.jornadaCerrada=true;
+  if(meta.periodoActivo) finalizarPeriodo();   // envía el total del tramo en curso antes de cerrar
+  if(elapsedInt){ clearInterval(elapsedInt); elapsedInt=null; }
+  guardar(); flush();                          // asegura el envío de lo pendiente
+  var ov=document.getElementById('jornadaOverlay');
+  if(ov){ ov.style.display='flex'; }
+  if(navigator.vibrate) navigator.vibrate([120,60,120,60,120]);
+  // Intento de cierre real (funciona si la app se abrió como ventana/PWA); si no, queda la pantalla de bloqueo.
+  setTimeout(function(){ try{ window.close(); }catch(e){} }, 1800);
+}
+setInterval(vigilarJornada, 15000);   // revisa cada 15 s
+function nuevaJornada(){
+  // Reinicia la jornada de 7 h y vuelve a la pantalla de Identificación lista para empezar.
+  meta.jornadaInicio=0; meta.jornadaCerrada=false;
+  log=[]; meta.obs=''; meta.tramoInicio=0; meta.avisado=false;
+  meta.periodoActivo=false; meta.horaInicio=''; meta.horaFin=''; meta.pendienteCambio=false;
+  if(elapsedInt){ clearInterval(elapsedInt); elapsedInt=null; }
+  if(timerInt){ clearInterval(timerInt); timerInt=null; }
+  var ov=document.getElementById('jornadaOverlay'); if(ov) ov.style.display='none';
+  document.getElementById('conteo').classList.add('hidden');
+  document.getElementById('setup').classList.remove('hidden');
+  document.getElementById('hdrSub').textContent='Identificación del puesto';
+  document.getElementById('contador').value=meta.contador||'';
+  document.getElementById('obs').value='';
+  if(meta.parada_codigo){ document.getElementById('parada').value=meta.parada_codigo;
+    document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||''); }
+  document.getElementById('inicioAuto').textContent=stamp();
+  guardar(); validar(); window.scrollTo(0,0);
+}
 
 function registrar(){
   if(!meta.periodoActivo){ alert('Primero pulsa “▶ Iniciar conteo”.'); return; }
@@ -496,14 +542,15 @@ function nuevoTramo(){
 
 (function init(){
   cargar(); pintarRed();
+  // Al reabrir la app tras cerrar una jornada, queda lista para empezar de nuevo (no atascada en la pantalla de fin).
+  if(meta.jornadaCerrada){ meta.jornadaCerrada=false; meta.jornadaInicio=0; meta.periodoActivo=false; guardar(); }
+  var ov=document.getElementById('jornadaOverlay'); if(ov) ov.style.display='none';
   if(scriptUrl) document.getElementById('scriptUrl').value=scriptUrl;
   document.getElementById('inicioAuto').textContent=stamp();
   if(meta.contador && meta.parada_codigo && meta.turno){
     document.getElementById('contador').value=meta.contador;
     document.getElementById('parada').value=meta.parada_codigo;
     document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||'');
-    cambioVal=meta.cambio||'No';
-    document.querySelectorAll('#cambioRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===cambioVal); });
     document.querySelectorAll('#turnoRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===meta.turno); });
     flush();   /* siempre inicia en la pantalla de Identificación; los datos quedan precargados */
   }
