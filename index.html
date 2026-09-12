@@ -2,560 +2,546 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src &#x27;self&#x27;; script-src &#x27;sha256-ozfCdSFYX5kK7E1VYzyZ/tTSR0YGZiKHrBUMjViCwb0=&#x27;; style-src &#x27;self&#x27; &#x27;unsafe-inline&#x27;; connect-src https://script.google.com https://script.googleusercontent.com; img-src &#x27;self&#x27; data:; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;; upgrade-insecure-requests">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#11141b">
 <title>Contador de Pasajeros — Panamá</title>
 <style>
-  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html, body { margin:0; padding:0; }
-  body { font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    background:#0f1115; color:#e8eaed; padding-bottom:30px; }
-  header { padding:0; position:sticky; top:0; z-index:20;
-    background:linear-gradient(135deg,#153033,#11141b); border-bottom:1px solid #2b313b;
-    box-shadow:0 2px 12px rgba(0,0,0,.35); }
-  .brand { display:flex; align-items:center; gap:11px; padding:12px 16px; }
-  .brand .logo { width:40px; height:40px; border-radius:12px; flex:none;
-    background:linear-gradient(135deg,#0d9488,#22c3a6); display:flex; align-items:center;
-    justify-content:center; font-size:22px; box-shadow:0 3px 12px rgba(13,148,136,.45); }
-  .brand-txt { flex:1; min-width:0; text-align:left; }
-  .brand h1 { margin:0; font-size:18px; font-weight:700; letter-spacing:.2px; line-height:1.15; }
-  .brand .tag { font-size:10.5px; color:#9aa2ad; margin-top:2px; text-transform:uppercase; letter-spacing:.7px; }
-  .net { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:600;
-    padding:5px 11px; border-radius:999px; flex:none; }
-  .net::before { content:''; width:7px; height:7px; border-radius:50%; background:currentColor; }
-  .net.on { background:rgba(67,160,71,.16); color:#7bd88a; }
-  .net.off { background:rgba(229,57,53,.16); color:#ff8a8a; }
-  header .sub { font-size:12px; color:#7fe3d3; padding:8px 16px; background:rgba(13,148,136,.10);
-    border-top:1px solid #1e2a2a; text-align:left; font-weight:500; }
-  .card { background:#161a20; border:1px solid #262b33; border-radius:14px; margin:12px; padding:14px; }
-  .card h2 { margin:0 0 12px; font-size:12px; letter-spacing:.8px; text-transform:uppercase; color:#3ec9b0; }
-  label { display:block; font-size:13px; color:#cbd2db; margin:12px 0 5px; font-weight:600; }
-  label:first-of-type { margin-top:0; }
-  input[type=text], select, textarea { width:100%; background:#0f1115; border:1px solid #2b313b; color:#e8eaed;
-    border-radius:10px; padding:12px; font-size:15px; font-family:inherit; }
-  textarea { resize:vertical; min-height:54px; }
-  .radio-row { display:flex; gap:8px; flex-wrap:wrap; }
-  .radio-row button { flex:1; min-width:90px; background:#0f1115; border:1px solid #2b313b; color:#cbd2db;
-    border-radius:10px; padding:12px; font-size:14px; font-weight:600; cursor:pointer; }
-  .radio-row button.on { background:#22c3a6; border-color:#22c3a6; color:#08211d; }
-  .hint { font-size:12px; color:#6b7280; margin-top:4px; font-style:italic; }
-  .auto { font-size:12px; color:#9aa2ad; margin-top:10px; }
-  .btn-primary { width:100%; background:#0d9488; color:#fff; border:none; border-radius:12px;
-    padding:15px; font-size:16px; font-weight:700; cursor:pointer; margin-top:6px; }
-  .btn-primary:disabled { opacity:.4; }
-  .btn-ghost { width:100%; background:#1b1f27; color:#e8eaed; border:1px solid #2b313b; border-radius:10px;
-    padding:12px; font-size:14px; font-weight:600; cursor:pointer; margin-top:6px; }
-  .hidden { display:none; }
-  .combo-wrap { position:relative; }
-  .combo-list { position:absolute; left:0; right:0; top:100%; z-index:30; background:#12151a;
-    border:1px solid #2b313b; border-top:none; border-radius:0 0 10px 10px; max-height:260px;
-    overflow-y:auto; display:none; }
-  .combo-list.open { display:block; }
-  .combo-item { padding:11px 12px; font-size:14px; border-bottom:1px solid #1c2027; cursor:pointer; }
-  .combo-item:active { background:#232a35; }
-  .combo-item .cc { font-weight:700; color:#5fe0cb; }
-  .combo-item .nn { color:#cbd2db; font-size:13px; }
-  .combo-group { padding:7px 12px; font-size:11px; text-transform:uppercase; letter-spacing:.5px;
-    color:#3ec9b0; background:#161a20; position:sticky; top:0; }
-  .sel-badge { margin-top:6px; font-size:13px; color:#7bd88a; font-weight:600; }
-  .sel-badge a { color:#5fe0cb; margin-left:8px; font-weight:500; }
-  .config-toggle { font-size:12px; color:#3ec9b0; cursor:pointer; text-align:center; margin:4px 0 0; }
-  /* pantalla conteo */
-  .big-total { text-align:center; padding:16px 12px 6px; }
-  .big-total .n { font-size:72px; font-weight:800; line-height:1; color:#7fe3d3; font-variant-numeric:tabular-nums; }
-  .big-total .l { font-size:12px; color:#9aa2ad; text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
-  .tapwrap { padding:10px 12px; }
-  .tap-pax { width:100%; border:none; border-radius:22px; color:#062b25; font-size:30px; font-weight:800;
-    padding:60px 8px; cursor:pointer; user-select:none; transition:transform .05s, filter .1s;
-    background:linear-gradient(135deg,#12b28f,#2fe0bd); box-shadow:0 6px 20px rgba(20,180,150,.35);
-    display:flex; flex-direction:column; align-items:center; gap:6px; }
-  .tap-pax:active { transform:scale(.97); filter:brightness(1.12); }
-  .tap-pax .sub { font-size:14px; font-weight:600; opacity:.8; }
-  .last { margin:0 12px 10px; padding:10px 12px; background:#12151a; border-radius:10px;
-    font-size:13px; color:#9aa2ad; min-height:18px; text-align:center; }
-  .last b { color:#e8eaed; }
-  .pend { margin:0 12px 10px; font-size:12px; color:#9aa2ad; text-align:center; }
-  .pend .w { color:#ffcf6b; } .pend .ok { color:#7bd88a; }
-  .toolbar { display:flex; gap:8px; margin:0 12px 12px; }
-  .toolbar button { flex:1; background:#1b1f27; color:#e8eaed; border:1px solid #2b313b;
-    border-radius:10px; padding:12px; font-size:14px; font-weight:600; cursor:pointer; }
-  .toolbar .danger { color:#ff8a8a; }
-  .export-row { display:flex; gap:8px; margin-top:8px; }
-  .export-row button { flex:1; background:#16855c; color:#fff; border:none; border-radius:12px;
-    padding:14px; font-size:15px; font-weight:700; cursor:pointer; }
-  .chips { font-size:12px; color:#9aa2ad; margin:2px 12px 8px; text-align:center; }
-  .state-tag { text-align:center; font-size:12px; font-weight:700; letter-spacing:.5px;
-    text-transform:uppercase; margin:2px 12px 8px; }
-  .state-tag.off { color:#ffcf6b; } .state-tag.on { color:#7bd88a; }
-  .period-info { margin:0 12px 10px; display:flex; gap:8px; }
-  .period-info .box { flex:1; text-align:center; background:#12151a; border:1px solid #2b313b;
-    border-radius:10px; padding:8px 4px; }
-  .period-info .box .k { font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:#9aa2ad; }
-  .period-info .box .v { font-size:17px; font-weight:800; color:#7fe3d3;
-    font-variant-numeric:tabular-nums; margin-top:2px; }
-  .period-ctl { margin:0 12px 6px; }
-  .period-ctl button { width:100%; border:none; border-radius:16px; padding:17px;
-    font-size:18px; font-weight:800; cursor:pointer; transition:transform .05s, filter .1s; }
-  .period-ctl button:active { transform:scale(.98); }
-  .period-ctl .start { background:linear-gradient(135deg,#12b28f,#2fe0bd); color:#062b25;
-    box-shadow:0 6px 18px rgba(20,180,150,.35); }
-  .period-ctl .stop { background:linear-gradient(135deg,#e05353,#ff7a7a); color:#2b0707;
-    box-shadow:0 6px 18px rgba(224,83,83,.35); }
-  .tap-pax:disabled { filter:grayscale(.75) brightness(.55); cursor:not-allowed; box-shadow:none; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:#0f1115;color:#e8eaed;padding-bottom:32px;line-height:1.35}
+button,input,textarea,select{font:inherit}
+button{touch-action:manipulation}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #67e8f9;outline-offset:2px}
+header{padding:0;position:sticky;top:0;z-index:20;background:linear-gradient(135deg,#153033,#11141b);border-bottom:1px solid #2b313b;box-shadow:0 2px 12px rgba(0,0,0,.35)}
+.brand{display:flex;align-items:center;gap:11px;padding:12px 16px}.brand .logo{width:40px;height:40px;border-radius:12px;flex:none;background:linear-gradient(135deg,#0d9488,#22c3a6);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 3px 12px rgba(13,148,136,.45)}
+.brand-txt{flex:1;min-width:0;text-align:left}.brand h1{margin:0;font-size:18px;font-weight:750;letter-spacing:.2px;line-height:1.15}.brand .tag{font-size:10.5px;color:#9aa2ad;margin-top:2px;text-transform:uppercase;letter-spacing:.7px}
+.net{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:5px 10px;border-radius:999px;flex:none}.net::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}.net.on{background:rgba(67,160,71,.16);color:#7bd88a}.net.off{background:rgba(229,57,53,.16);color:#ff8a8a}
+header .sub{font-size:12px;color:#7fe3d3;padding:8px 16px;background:rgba(13,148,136,.10);border-top:1px solid #1e2a2a;text-align:left;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.app-alert{display:none;margin:10px 12px 0;padding:10px 12px;border-radius:10px;background:#4b1f25;border:1px solid #7f1d1d;color:#fecaca;font-size:12px;font-weight:650}.app-alert.show{display:block}
+.card{background:#161a20;border:1px solid #262b33;border-radius:16px;margin:12px;padding:15px;box-shadow:0 8px 24px rgba(0,0,0,.12)}.card h2{margin:0 0 13px;font-size:12px;letter-spacing:.8px;text-transform:uppercase;color:#3ec9b0}
+label{display:block;font-size:13px;color:#cbd2db;margin:13px 0 6px;font-weight:650}label:first-of-type{margin-top:0}
+input[type=text],select,textarea{width:100%;background:#0f1115;border:1px solid #343b46;color:#e8eaed;border-radius:11px;padding:13px;font-size:16px;font-family:inherit}textarea{resize:vertical;min-height:64px}
+input::placeholder,textarea::placeholder{color:#707985}.radio-row{display:flex;gap:8px;flex-wrap:wrap}.radio-row button{flex:1;min-width:120px;background:#0f1115;border:1px solid #343b46;color:#cbd2db;border-radius:11px;padding:13px 10px;font-size:14px;font-weight:650;cursor:pointer;min-height:50px}.radio-row button.on{background:#22c3a6;border-color:#22c3a6;color:#08211d}
+.hint{font-size:12px;color:#8b95a3;margin-top:5px}.auto{font-size:12px;color:#9aa2ad;margin-top:11px}.btn-primary{width:100%;background:#0d9488;color:#fff;border:none;border-radius:12px;padding:15px;font-size:16px;font-weight:750;cursor:pointer;margin-top:8px;min-height:50px}.btn-primary:disabled{opacity:.4;cursor:not-allowed}.hidden{display:none!important}
+.combo-wrap{position:relative}.combo-list{position:absolute;left:0;right:0;top:100%;z-index:30;background:#12151a;border:1px solid #343b46;border-top:none;border-radius:0 0 11px 11px;max-height:300px;overflow-y:auto;display:none;box-shadow:0 12px 28px rgba(0,0,0,.4)}.combo-list.open{display:block}.combo-item{display:block;width:100%;text-align:left;padding:12px;font-size:14px;border:0;border-bottom:1px solid #1c2027;background:#12151a;color:#cbd2db;cursor:pointer}.combo-item:active,.combo-item:hover{background:#232a35}.combo-item .cc{font-weight:800;color:#5fe0cb}.combo-item .nn{color:#cbd2db;font-size:13px}.combo-group{padding:8px 12px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#3ec9b0;background:#161a20;position:sticky;top:0;z-index:1}.combo-empty{padding:14px;color:#9aa2ad;text-align:center;font-size:13px}
+.sel-badge{margin-top:7px;font-size:13px;color:#7bd88a;font-weight:650;display:flex;gap:8px;align-items:center;flex-wrap:wrap}.sel-badge a{color:#5fe0cb;font-weight:600;text-decoration:none}
+.big-total{text-align:center;padding:19px 12px 7px}.big-total .n{font-size:76px;font-weight:850;line-height:1;color:#7fe3d3;font-variant-numeric:tabular-nums}.big-total .l{font-size:12px;color:#9aa2ad;text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+.tapwrap{padding:10px 12px}.tap-pax{width:100%;border:none;border-radius:22px;color:#062b25;font-size:31px;font-weight:850;padding:64px 8px;cursor:pointer;user-select:none;transition:transform .05s,filter .1s;background:linear-gradient(135deg,#12b28f,#2fe0bd);box-shadow:0 6px 20px rgba(20,180,150,.35);display:flex;flex-direction:column;align-items:center;gap:6px}.tap-pax:active{transform:scale(.975);filter:brightness(1.1)}.tap-pax .sub{font-size:14px;font-weight:650;opacity:.8}.tap-pax:disabled{filter:grayscale(.75) brightness(.55);cursor:not-allowed;box-shadow:none}
+.last{margin:0 12px 10px;padding:11px 12px;background:#12151a;border-radius:10px;font-size:13px;color:#b6bec9;min-height:40px;text-align:center;border:1px solid #202630}.pend{margin:0 12px 10px;font-size:12px;text-align:center}.pend.w{color:#ffcf6b}.pend.ok{color:#7bd88a}.toolbar{display:flex;gap:8px;margin:0 12px 12px}.toolbar button{flex:1;background:#1b1f27;color:#e8eaed;border:1px solid #343b46;border-radius:10px;padding:12px;font-size:14px;font-weight:650;cursor:pointer;min-height:46px}.toolbar button:disabled{opacity:.4;cursor:not-allowed}.chips{font-size:12px;color:#9aa2ad;margin:2px 12px 8px;text-align:center}.state-tag{text-align:center;font-size:12px;font-weight:750;letter-spacing:.5px;text-transform:uppercase;margin:2px 12px 8px}.state-tag.off{color:#ffcf6b}.state-tag.on{color:#7bd88a}.period-info{margin:0 12px 10px;display:flex;gap:8px}.period-info .box{flex:1;text-align:center;background:#12151a;border:1px solid #2b313b;border-radius:10px;padding:8px 4px}.period-info .box .k{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:#9aa2ad}.period-info .box .v{font-size:17px;font-weight:800;color:#7fe3d3;font-variant-numeric:tabular-nums;margin-top:2px}.export-row{display:flex;gap:8px;margin-top:8px}.export-row button{flex:1;background:#0d9488;color:#fff;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;min-height:48px}
+.overlay{display:none;position:fixed;inset:0;z-index:9999;background:#0b1220;color:#e5e7eb;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px}
+.small-note{font-size:11px;color:#727d8b;margin-top:8px;text-align:center}
+.quick-note{margin:0 12px 10px;padding:12px;background:#161a20;border:1px solid #2b313b;border-radius:14px}
+.quick-note label{margin:0 0 6px}.quick-note textarea{min-height:58px;max-height:120px}.quick-note .hint{margin-top:6px}
+.history-card{margin:0 12px 12px;padding:12px;background:#161a20;border:1px solid #2b313b;border-radius:14px}
+.history-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}.history-head h2{margin:0;font-size:12px;letter-spacing:.7px;text-transform:uppercase;color:#3ec9b0}.history-head span{font-size:11px;color:#8b95a3}
+.undo-preview{display:none;margin:0 0 9px;padding:9px 10px;border-radius:9px;background:#2b2114;border:1px solid #57401d;color:#ffd27a;font-size:12px;font-weight:700}.undo-preview.show{display:block}
+.recent-log{display:grid;gap:6px}.log-empty{padding:9px 4px;color:#798391;font-size:12px;text-align:center}
+.log-row{display:grid;grid-template-columns:auto 1fr auto;gap:9px;align-items:start;padding:9px 10px;border:1px solid #252c35;border-radius:10px;background:#11151a}.log-row.target{border-color:#725321;background:#201b13}.log-row.void{opacity:.64}.log-num{min-width:34px;font-size:12px;font-weight:800;color:#7fe3d3}.log-main{min-width:0}.log-time{font-size:13px;font-weight:750;color:#e8eaed;font-variant-numeric:tabular-nums}.log-obs{font-size:11px;color:#98a2af;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.log-state{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;padding:3px 6px;border-radius:999px;white-space:nowrap}.log-state.valid{background:rgba(67,160,71,.14);color:#8ee49a}.log-state.void{background:rgba(229,57,53,.14);color:#ff9999}
+.toolbar .undo-action{border-color:#5b403f;color:#ffb4b4;background:#24191a}.toolbar .undo-action:not(:disabled):active{background:#342021}
+@media (min-width:700px){#setup,#conteo{max-width:560px;margin:0 auto}.brand{max-width:720px;margin:0 auto}header .sub{padding-left:max(16px,calc((100vw - 720px)/2 + 16px))}.tap-pax{padding:72px 8px}}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
-    <div class="logo">🚌</div>
-    <div class="brand-txt">
-      <h1>Contador de Pasajeros</h1>
-      <div class="tag">Área Metropolitana de Panamá</div>
-    </div>
-    <div class="net off" id="netBadge">sin conexión</div>
+    <div class="logo" aria-hidden="true">🚌</div>
+    <div class="brand-txt"><h1>Contador de Pasajeros</h1><div class="tag">Área Metropolitana de Panamá</div></div>
+    <div class="net off" id="netBadge" aria-live="polite">sin conexión</div>
   </div>
   <div class="sub" id="hdrSub">Identificación del puesto</div>
 </header>
+<div id="appAlert" class="app-alert" role="alert"></div>
 
-<!-- PANTALLA 1 -->
-<div id="setup">
-  <div class="card">
-    <h2>Identificación</h2>
-    <label>1. Código o nombre del contador</label>
-    <input type="text" id="contador" placeholder="Ej: P1-Ana" autocomplete="off">
+<main>
+  <section id="setup">
+    <div class="card">
+      <h2>Identificación</h2>
+      <label for="contador">1. Código o nombre del contador</label>
+      <input type="text" id="contador" maxlength="60" placeholder="Ej: P1-Ana" autocomplete="off" autocapitalize="words">
 
-    <label style="display:none">Día</label>
-    <select id="dia" style="display:none"></select>
+      <label for="dia" class="hidden">Día</label>
+      <select id="dia" class="hidden" aria-hidden="true"></select>
 
-    <label>2. Parada / estación de trabajo</label>
-    <div class="combo-wrap">
-      <input type="text" id="paradaSearch" placeholder="Buscar grupo o lugar..." autocomplete="off">
-      <div class="combo-list" id="paradaList"></div>
+      <label for="paradaSearch">2. Parada / estación de trabajo</label>
+      <div class="combo-wrap">
+        <input type="text" id="paradaSearch" placeholder="Buscar código o lugar…" autocomplete="off" aria-autocomplete="list" aria-controls="paradaList">
+        <div class="combo-list" id="paradaList" role="listbox"></div>
+      </div>
+      <input type="hidden" id="parada">
+      <div class="sel-badge" id="paradaSel"></div>
+      <div class="hint" id="dayHint"></div>
+
+      <label>3. Turno</label>
+      <div class="radio-row" id="turnoRow" role="group" aria-label="Turno">
+        <button type="button" data-v="Mañana (06:00-13:00)">Mañana <span style="opacity:.75;font-weight:500;font-size:12px">06:00–13:00</span></button>
+        <button type="button" data-v="Tarde (13:00-20:00)">Tarde <span style="opacity:.75;font-weight:500;font-size:12px">13:00–20:00</span></button>
+      </div>
+      <div class="auto">Inicio del registro: <span id="inicioAuto">—</span></div>
+      <button type="button" class="btn-primary" id="startBtn" disabled>Continuar →</button>
     </div>
-    <input type="hidden" id="parada">
-    <div class="sel-badge" id="paradaSel"></div>
+  </section>
 
-    <label>3. Turno</label>
-    <div class="radio-row" id="turnoRow">
-      <button data-v="Mañana (06:00-13:00)">Mañana <span style="opacity:.75;font-weight:500;font-size:12px;">06:00-13:00</span></button>
-      <button data-v="Tarde (13:00-20:00)">Tarde <span style="opacity:.75;font-weight:500;font-size:12px;">13:00-20:00</span></button>
+  <section id="conteo" class="hidden">
+    <div class="big-total"><div class="n" id="tTotal">0</div><div class="l">Pasajeros válidos del tramo</div></div>
+    <div class="chips" id="chips"></div>
+    <div class="state-tag off" id="stateTag">Conteo sin iniciar</div>
+    <div class="period-info">
+      <div class="box"><div class="k">Inicio</div><div class="v" id="piInicio">—</div></div>
+      <div class="box"><div class="k">Transcurrido</div><div class="v" id="piElapsed">00:00</div></div>
     </div>
-
-
-    <div class="auto">Inicio del registro (automático): <span id="inicioAuto">—</span></div>
-    <button class="btn-primary" id="startBtn" onclick="iniciar()" disabled>Continuar →</button>
-    <!-- Enlace de Google Sheets fijo en el código (config oculto en producción) -->
-    <div id="configBox" class="hidden" style="margin-top:10px;">
-      <label>URL del Web App (Apps Script)</label>
-      <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/..../exec" autocomplete="off">
-      <div class="hint">Pegue la URL del Apps Script de la hoja de PASAJEROS (ver instrucciones). Se guarda en este dispositivo.</div>
-      <button class="btn-primary" style="background:#16855c;margin-top:8px;" onclick="guardarUrl()">Guardar enlace</button>
+    <div class="quick-note">
+      <label for="obs">Observación del próximo pasajero <span style="font-weight:500;color:#8b95a3">(opcional)</span></label>
+      <textarea id="obs" maxlength="500" placeholder="Ej: adulto mayor, silla de ruedas, incidencia…"></textarea>
+      <div class="hint">Se guarda solamente con el próximo +1 y el campo se limpia automáticamente.</div>
     </div>
-  </div>
+    <div class="tapwrap">
+      <button type="button" class="tap-pax" id="tapBtn">+1 PASAJERO<span class="sub">toque una vez por cada persona que aborda</span></button>
+    </div>
+    <div class="last" id="lastMsg" aria-live="polite">Preparando conteo…</div>
+    <div class="pend" id="pendMsg" aria-live="polite"></div>
+    <div class="history-card">
+      <div class="history-head"><h2>Últimos registros</h2><span>más reciente primero</span></div>
+      <div class="undo-preview" id="undoPreview"></div>
+      <div class="recent-log" id="recentLog" aria-live="polite"></div>
+    </div>
+    <div class="toolbar"><button type="button" class="undo-action" id="undoBtn">↩ No hay pasajeros para anular</button></div>
+    <div class="card">
+      <h2>Cierre del tramo</h2>
+      <div class="export-row"><button type="button" id="retryBtn">⟳ Reenviar pendientes</button></div>
+      <button type="button" class="btn-primary" style="margin-top:10px;background:#7c3aed" id="newTramoBtn">Finalizar tramo / cambiar puesto</button>
+      <div class="small-note">Los registros sin conexión quedan guardados en este dispositivo y se reintentan automáticamente.</div>
+    </div>
+  </section>
+</main>
+
+<div id="jornadaOverlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="finTitle">
+  <div style="font-size:52px;line-height:1;margin-bottom:14px" aria-hidden="true">✅</div>
+  <div id="finTitle" style="font-size:22px;font-weight:800;color:#5eead4">Jornada finalizada</div>
+  <div style="font-size:15px;margin-top:10px;max-width:340px;opacity:.9">Se cumplieron las <b>7 horas</b> de la jornada. El tramo activo fue cerrado y los registros pendientes permanecen guardados para sincronización.</div>
+  <button type="button" class="btn-primary" style="margin-top:22px;background:#16855c;max-width:320px" id="newJornadaBtn">Iniciar nueva jornada</button>
 </div>
 
-<!-- PANTALLA 2 -->
-<div id="conteo" class="hidden">
-  <div class="big-total"><div class="n" id="tTotal">0</div><div class="l">Pasajeros del tramo</div></div>
-  <div class="chips" id="chips"></div>
-  <div class="state-tag off" id="stateTag">Conteo sin iniciar</div>
-  <div class="period-info">
-    <div class="box"><div class="k">Inicio</div><div class="v" id="piInicio">—</div></div>
-    <div class="box"><div class="k">Transcurrido</div><div class="v" id="piElapsed">00:00</div></div>
-  </div>
-  <div class="tapwrap">
-    <button class="tap-pax" id="tapBtn" onclick="registrar()">+1 PASAJERO<span class="sub">toque por cada persona que aborda</span></button>
-  </div>
-  <div class="last" id="lastMsg">Pulsa “Iniciar conteo” para comenzar el tramo.</div>
-  <div class="pend" id="pendMsg"></div>
-  <div class="toolbar">
-    <button onclick="deshacer()">↩ Deshacer último</button>
-  </div>
-  <div class="card">
-    <h2>Cierre del tramo</h2>
-    <label>Observaciones del tramo (opcional)</label>
-    <textarea id="obs" placeholder="Notas..."></textarea>
-    <div class="export-row">
-      <button onclick="reintentar()" style="background:#0d9488;">⟳ Reenviar pendientes</button>
-    </div>
-    <button class="btn-primary" style="margin-top:10px;background:#7c3aed;" onclick="nuevoTramo()">↺ Cambio de contador o cierre de la app</button>
-  </div>
-</div>
+<script>"use strict";
 
-<!-- Pantalla de bloqueo: jornada de 7 h finalizada -->
-<div id="jornadaOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#0b1220;color:#e5e7eb;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:28px;">
-  <div style="font-size:52px;line-height:1;margin-bottom:14px;">✅</div>
-  <div style="font-size:22px;font-weight:800;color:#5eead4;">Jornada finalizada</div>
-  <div style="font-size:15px;margin-top:10px;max-width:340px;opacity:.9;">Se cumplieron las <b>7 horas</b> de la jornada. El conteo se cerró y los datos se enviaron automáticamente. Puede cerrar la aplicación o iniciar una nueva jornada.</div>
-  <button class="btn-primary" style="margin-top:22px;background:#16855c;max-width:320px;" onclick="nuevaJornada()">Iniciar nueva jornada</button>
-</div>
+const PARADAS = [{"c":"Lun_P1","d":"Lunes","o":1,"n":"Metro Villa Zaita-I","lat":9.079842,"lon":-79.356695},{"c":"Lun_P2","d":"Lunes","o":2,"n":"Alajuela-R","lat":9.02792,"lon":-79.507166},{"c":"Lun_P3","d":"Lunes","o":3,"n":"Gran Estacion - Bahia A","lat":9.030284,"lon":-79.491553},{"c":"Lun_P4","d":"Lunes","o":4,"n":"Metro Cincuentenario-R","lat":9.079782,"lon":-79.527075},{"c":"Mar_P1","d":"Martes","o":1,"n":"Balboa-R (Troncal)*","lat":9.050935,"lon":-79.450451},{"c":"Mar_P2","d":"Martes","o":2,"n":"Metro San Isidro-R-Puerta 12","lat":9.029435,"lon":-79.506964},{"c":"Mar_P3","d":"Martes","o":3,"n":"ZP Torrijos Carter - Puerta 1","lat":9.07816,"lon":-79.492093},{"c":"Mar_P4","d":"Martes","o":4,"n":"Inter. Metro Nvo. Tocumen-I-Puerta 06","lat":9.102062,"lon":-79.353636},{"c":"Mie_P1","d":"Miecoles","o":1,"n":"Metro Loteria","lat":9.078935,"lon":-79.400562},{"c":"Mie_P2","d":"Miecoles","o":2,"n":"Entrada Villa Don Bosco-I","lat":9.031334,"lon":-79.491449},{"c":"Mie_P3","d":"Miecoles","o":3,"n":"Los Andes-I - (Troncal)*","lat":9.048886,"lon":-79.508065},{"c":"Mie_P4","d":"Miecoles","o":4,"n":"Balmoral-I","lat":9.059213,"lon":-79.432333},{"c":"Jue_P2","d":"Jueves","o":2,"n":"Albrook - Bahia A","lat":8.973854,"lon":-79.551737},{"c":"Jue_P4","d":"Jueves","o":4,"n":"24 de diciembre 2  -Troncal*","lat":8.961476,"lon":-79.539079},{"c":"Jue_P5","d":"Jueves","o":5,"n":"CC El Dorado-I - Bahia 2","lat":9.009534,"lon":-79.534123},{"c":"Jue_P8","d":"Jueves","o":8,"n":"Albrook - Bahia C","lat":8.975731,"lon":-79.551662},{"c":"Vie_P1","d":"Viernes","o":1,"n":"Metro Villa Zaita-I","lat":9.079564,"lon":-79.526522},{"c":"Vie_P2","d":"Viernes","o":2,"n":"Las Colinas-I (Troncal)*","lat":9.050097,"lon":-79.509193},{"c":"Vie_P5","d":"Viernes","o":5,"n":"Metro 12 de Octubre-R","lat":9.103269,"lon":-79.37021},{"c":"Vie_P6","d":"Viernes","o":6,"n":"Albrook - Bahia B","lat":8.975104,"lon":-79.551617},{"c":"Sab_P4","d":"Sabado","o":4,"n":"Cerro Viento-I - Bahia A -Troncal*","lat":9.050487,"lon":-79.450427},{"c":"Sab_P5","d":"Sabado","o":5,"n":"5 de mayo Troncal*","lat":9.024393,"lon":-79.486468},{"c":"Sab_P6","d":"Sabado","o":6,"n":"Muelle Gamboa-R","lat":8.986878,"lon":-79.51266},{"c":"Sab_P11","d":"Sabado","o":11,"n":"5 de mayo Corredor*","lat":8.961749,"lon":-79.539268},{"c":"Dom_P7","d":"Domingo","o":7,"n":"Metro Brisas del Golf-R","lat":9.031035,"lon":-79.491336},{"c":"Dom_P8","d":"Domingo","o":8,"n":"Alajuela-R","lat":8.973217,"lon":-79.551777},{"c":"Dom_P9","d":"Domingo","o":9,"n":"ZP 24 de Diciembre 2 - Puerta 1","lat":9.103266,"lon":-79.366524},{"c":"Dom_P12","d":"Domingo","o":12,"n":"Central T Chorrillo","lat":8.975609,"lon":-79.516371}];
+const DIAS = ["Lunes","Martes","Miecoles","Jueves","Viernes","Sabado","Domingo"];
+const DIA_PREF = {Lunes:"Lun_",Martes:"Mar_",Miecoles:"Mie_",Jueves:"Jue_",Viernes:"Vie_",Sabado:"Sab_",Domingo:"Dom_"};
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzPzPmLaxleKPbdF-xr7dwSK-dCczgZEca59wDebnrnm8fp9nT493UAfoE_IgIRQMAHhQ/exec";
+const STATE_KEY = "cp_state_v2";
+const LEGACY_STATE_KEY = "cp_state";
+const DEVICE_KEY = "cp_device_v2";
+const JORNADA_MS = 7*60*60*1000;
+const OBS_MAX = 500;
+const CONTADOR_MAX = 60;
 
-<script>
-var PARADAS = [
-{"c": "Lun_P1", "n": "Metro Villa Zaita-I", "m": "https://www.google.com/maps?q=9.079842,-79.356695"},
-{"c": "Lun_P2", "n": "Alajuela-R", "m": "https://www.google.com/maps?q=9.02792,-79.507166"},
-{"c": "Lun_P3", "n": "Gran Estacion - Bahia A", "m": "https://www.google.com/maps?q=9.030284,-79.491553"},
-{"c": "Lun_P4", "n": "Metro Cincuentenario-R", "m": "https://www.google.com/maps?q=9.079782,-79.527075"},
-{"c": "Mar_P1", "n": "Balboa-R (Troncal)*", "m": "https://www.google.com/maps?q=9.050935,-79.450451"},
-{"c": "Mar_P2", "n": "Metro San Isidro-R-Puerta 12", "m": "https://www.google.com/maps?q=9.029435,-79.506964"},
-{"c": "Mar_P3", "n": "ZP Torrijos Carter - Puerta 1", "m": "https://www.google.com/maps?q=9.07816,-79.492093"},
-{"c": "Mar_P4", "n": "Inter. Metro Nvo. Tocumen-I-Puerta 06", "m": "https://www.google.com/maps?q=9.102062,-79.353636"},
-{"c": "Mie_P1", "n": "Metro Loteria", "m": "https://www.google.com/maps?q=9.078935,-79.400562"},
-{"c": "Mie_P2", "n": "Entrada Villa Don Bosco-I", "m": "https://www.google.com/maps?q=9.031334,-79.491449"},
-{"c": "Mie_P3", "n": "Los Andes-I - (Troncal)*", "m": "https://www.google.com/maps?q=9.048886,-79.508065"},
-{"c": "Mie_P4", "n": "Balmoral-I", "m": "https://www.google.com/maps?q=9.059213,-79.432333"},
-{"c": "Jue_P2", "n": "Albrook - Bahia A", "m": "https://www.google.com/maps?q=8.973854,-79.551737"},
-{"c": "Jue_P4", "n": "24 de diciembre 2  -Troncal*", "m": "https://www.google.com/maps?q=8.961476,-79.539079"},
-{"c": "Jue_P5", "n": "CC El Dorado-I - Bahia 2", "m": "https://www.google.com/maps?q=9.009534,-79.534123"},
-{"c": "Jue_P8", "n": "Albrook - Bahia C", "m": "https://www.google.com/maps?q=8.975731,-79.551662"},
-{"c": "Vie_P1", "n": "Metro Villa Zaita-I", "m": "https://www.google.com/maps?q=9.079564,-79.526522"},
-{"c": "Vie_P2", "n": "Las Colinas-I (Troncal)*", "m": "https://www.google.com/maps?q=9.050097,-79.509193"},
-{"c": "Vie_P5", "n": "Metro 12 de Octubre-R", "m": "https://www.google.com/maps?q=9.103269,-79.37021"},
-{"c": "Vie_P6", "n": "Albrook - Bahia B", "m": "https://www.google.com/maps?q=8.975104,-79.551617"},
-{"c": "Sab_P4", "n": "Cerro Viento-I - Bahia A -Troncal*", "m": "https://www.google.com/maps?q=9.050487,-79.450427"},
-{"c": "Sab_P5", "n": "5 de mayo Troncal*", "m": "https://www.google.com/maps?q=9.024393,-79.486468"},
-{"c": "Sab_P6", "n": "Muelle Gamboa-R", "m": "https://www.google.com/maps?q=8.986878,-79.51266"},
-{"c": "Sab_P11", "n": "5 de mayo Corredor*", "m": "https://www.google.com/maps?q=8.961749,-79.539268"},
-{"c": "Dom_P7", "n": "Metro Brisas del Golf-R", "m": "https://www.google.com/maps?q=9.031035,-79.491336"},
-{"c": "Dom_P8", "n": "Alajuela-R", "m": "https://www.google.com/maps?q=8.973217,-79.551777"},
-{"c": "Dom_P9", "n": "ZP 24 de Diciembre 2 - Puerta 1", "m": "https://www.google.com/maps?q=9.103266,-79.366524"},
-{"c": "Dom_P12", "n": "Central T Chorrillo", "m": "https://www.google.com/maps?q=8.975609,-79.516371"}
-];
-var DIAS = ["Lunes","Martes","Miercoles","Jueves","Viernes","Sabado","Domingo"];
-var DIA_PREF = {Lunes:"Lun_",Martes:"Mar_",Miercoles:"Mie_",Jueves:"Jue_",Viernes:"Vie_",Sabado:"Sab_",Domingo:"Dom_"};
+let meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", sentido:"", turno:"", tramo:"", inicio:"", obs:"", tramoInicio:0, avisado:false, horaInicio:"", horaFin:"", periodoActivo:false, periodoId:"", jornadaInicio:0, jornadaCerrada:false, pendienteCambio:false };
+let log = [];       // Registros del período actual. Los anulados se conservan.
+let markers = [];   // Cola durable para marcadores y registros pendientes de períodos anteriores.
+let deviceId = "";
+let elapsedInt = null;
+let syncBusy = false;
+let syncRetryTimer = null;
+let syncRetryMs = 1500;
 
-var meta = { contador:"", parada_codigo:"", parada_nombre:"", cambio:"No", sentido:"", turno:"", tramo:"", inicio:"", obs:"", tramoInicio:0, avisado:false, horaInicio:"", horaFin:"", periodoActivo:false, periodoId:"", jornadaInicio:0, jornadaCerrada:false };
-var log = [];        // registros CONTEO del período en curso
-var markers = [];    // marcadores INICIO / RESUMEN pendientes o enviados
-var scriptUrl = "";
-var deviceId = "";
+const $ = (id) => document.getElementById(id);
 
+function normalizarTexto(v, max){
+  return String(v == null ? "" : v).replace(/[\u0000-\u001F\u007F]/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
+}
+function fmt2(n){ return String(n).padStart(2,"0"); }
+function ahoraHMS(){ const d=new Date(); return `${fmt2(d.getHours())}:${fmt2(d.getMinutes())}:${fmt2(d.getSeconds())}`; }
+function hoyFecha(){ const d=new Date(); return `${d.getFullYear()}-${fmt2(d.getMonth()+1)}-${fmt2(d.getDate())}`; }
+function stamp(){ return `${hoyFecha()} ${ahoraHMS()}`; }
+function makeId(prefix){
+  if(window.crypto && crypto.randomUUID) return `${prefix || "R"}_${crypto.randomUUID()}`;
+  if(window.crypto && crypto.getRandomValues){
+    const a=new Uint32Array(4); crypto.getRandomValues(a); return `${prefix || "R"}_${Array.from(a).map(x=>x.toString(36)).join("")}`;
+  }
+  return `${prefix || "R"}_${Date.now()}_${Math.random().toString(36).slice(2,10)}`;
+}
+function makeDeviceId(){ return makeId("D").replace(/-/g,"").slice(0,38).toUpperCase(); }
+function statusPendiente(s){ return s === "pending" || s === "sending"; }
+function statusEnviado(s){ return s === "submitted" || s === "sent"; }
+function normalizarStatus(r){
+  if(!r || typeof r !== "object") return null;
+  if(r.status === "sending") r.status = "pending"; // una recarga deja incierto el request: se reintenta por ID.
+  if(r.status === "sent") r.status = "submitted";
+  if(!r.status) r.status = "pending";
+  return r;
+}
+function dedupe(arr){
+  const seen=new Set(); const out=[];
+  (Array.isArray(arr)?arr:[]).forEach(r=>{ if(r && r.id && !seen.has(r.id)){ seen.add(r.id); out.push(normalizarStatus(r)); } });
+  return out;
+}
+function setAlert(msg){
+  const el=$("appAlert");
+  if(!el) return;
+  el.textContent=msg || "";
+  el.classList.toggle("show", !!msg);
+}
+function guardar(){
+  try{
+    localStorage.setItem(STATE_KEY, JSON.stringify({version:2, meta, log, markers}));
+    setAlert("");
+    return true;
+  }catch(e){
+    setAlert("No se pudo guardar localmente. No cierres la página hasta recuperar espacio en el dispositivo.");
+    return false;
+  }
+}
 function cargar(){
-  try{ var s=JSON.parse(localStorage.getItem('cp_state')||'null'); if(s){ meta=s.meta||meta; log=s.log||[]; markers=s.markers||[]; } }catch(e){}
-  scriptUrl = localStorage.getItem('cp_url')||"https://script.google.com/macros/s/AKfycbzPzPmLaxleKPbdF-xr7dwSK-dCczgZEca59wDebnrnm8fp9nT493UAfoE_IgIRQMAHhQ/exec";
-  deviceId = localStorage.getItem('cp_device');
-  if(!deviceId){ deviceId='D'+Math.random().toString(36).slice(2,8).toUpperCase(); localStorage.setItem('cp_device',deviceId); }
+  let s=null;
+  try{ s=JSON.parse(localStorage.getItem(STATE_KEY) || localStorage.getItem(LEGACY_STATE_KEY) || "null"); }catch(e){ s=null; }
+  if(s && typeof s === "object"){
+    if(s.meta && typeof s.meta === "object") meta=Object.assign(meta,s.meta);
+    log=dedupe(s.log);
+    markers=dedupe(s.markers);
+  }
+  deviceId=localStorage.getItem(DEVICE_KEY) || localStorage.getItem("cp_device") || "";
+  if(!deviceId){ deviceId=makeDeviceId(); try{ localStorage.setItem(DEVICE_KEY,deviceId); }catch(e){} }
+  meta.contador=normalizarTexto(meta.contador,CONTADOR_MAX);
+  meta.obs=String(meta.obs || "").slice(0,OBS_MAX);
+  if(meta.parada_codigo && !PARADAS.some(p=>p.c===meta.parada_codigo)){
+    meta.parada_codigo=""; meta.parada_nombre="";
+  }
+  guardar();
 }
-function guardar(){ try{ localStorage.setItem('cp_state', JSON.stringify({meta:meta,log:log,markers:markers})); }catch(e){} }
-function fmt2(n){ return String(n).padStart(2,'0'); }
-function ahoraHMS(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');}; return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds()); }
-function hoyFecha(){ var d=new Date(),p=function(n){return String(n).padStart(2,'0');}; return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate()); }
-function stamp(){ return hoyFecha()+' '+ahoraHMS(); }
 
-function pintarRed(){ var b=document.getElementById('netBadge');
-  if(navigator.onLine){ b.className='net on'; b.textContent='en línea'; } else { b.className='net off'; b.textContent='sin conexión'; } }
-window.addEventListener('online', function(){ pintarRed(); flush(); });
-window.addEventListener('offline', pintarRed);
+function pintarRed(){
+  const b=$("netBadge");
+  const on=navigator.onLine;
+  b.className=`net ${on?"on":"off"}`;
+  b.textContent=on?"en línea":"sin conexión";
+}
+window.addEventListener("online",()=>{pintarRed();flush();});
+window.addEventListener("offline",pintarRed);
+document.addEventListener("visibilitychange",()=>{ if(document.visibilityState === "hidden") flush(); });
+window.addEventListener("beforeunload",(e)=>{ if(pendientes()>0){ e.preventDefault(); e.returnValue=""; } });
 
-function toggleConfig(){ document.getElementById('configBox').classList.toggle('hidden'); }
-function guardarUrl(){ scriptUrl=document.getElementById('scriptUrl').value.trim(); localStorage.setItem('cp_url',scriptUrl);
-  alert(scriptUrl?'Enlace guardado.':'Enlace borrado. La app contará y guardará local, pero no enviará a Google Sheets.'); }
-
-
-function autoTramo(){ var h=new Date().getHours(); function p(n){return (n<10?'0':'')+n;} return p(h)+':00-'+p(h+1)+':00'; }
+function autoTramo(){
+  const h=new Date().getHours();
+  return `${fmt2(h)}:00-${fmt2((h+1)%24)}:00`;
+}
+function turnoValido(v){ return ["Mañana (06:00-13:00)","Tarde (13:00-20:00)"].includes(v); }
 function validar(){
-  var ok = document.getElementById('contador').value.trim() && document.getElementById('parada').value.trim() &&
-    meta.turno;
-  document.getElementById('startBtn').disabled = !ok;
+  const contador=normalizarTexto($("contador").value,CONTADOR_MAX);
+  const parada=$("parada").value.trim();
+  const paradaOk=PARADAS.some(p=>p.c===parada);
+  $("startBtn").disabled=!(contador && paradaOk && turnoValido(meta.turno));
 }
-document.getElementById('contador').addEventListener('input', validar);
-function bindRadio(rowId, cb){
-  document.querySelectorAll('#'+rowId+' button').forEach(function(b){
-    b.onclick=function(){ document.querySelectorAll('#'+rowId+' button').forEach(function(x){x.classList.remove('on');});
-      b.classList.add('on'); cb(b.dataset.v); validar(); };
+
+function bindRadio(rowId,cb){
+  document.querySelectorAll(`#${rowId} button`).forEach(b=>{
+    b.addEventListener("click",()=>{
+      document.querySelectorAll(`#${rowId} button`).forEach(x=>x.classList.remove("on"));
+      b.classList.add("on"); cb(b.dataset.v); validar();
+    });
   });
 }
-bindRadio('turnoRow', function(v){ meta.turno=v; });
 
-/* combobox paradas */
-(function(){ var sel=document.getElementById('dia');
-  DIAS.forEach(function(d){ var o=document.createElement('option'); o.value=d; o.textContent=d; sel.appendChild(o); });
-  var map={0:"Domingo",1:"Lunes",2:"Martes",3:"Miercoles",4:"Jueves",5:"Viernes",6:"Sabado"};
-  sel.value=map[new Date().getDay()];
-  sel.addEventListener('change', function(){ if(!document.getElementById('paradaSearch').value.trim()) mostrarLista(''); });
-})();
 function esPresel(p){ return /_P/.test(p.c) && /^(Lun|Mar|Mie|Jue|Vie|Sab|Dom)_/.test(p.c); }
-function filtrar(q){ q=(q||'').trim().toLowerCase(); var pref=DIA_PREF[document.getElementById('dia').value];
-  var pd=[],po=[],rf=[];
-  PARADAS.forEach(function(p){ if(q && (p.c+' '+(p.n||'')).toLowerCase().indexOf(q)<0) return;
-    if(esPresel(p)){ if(p.c.indexOf(pref)===0) pd.push(p); else po.push(p); } else rf.push(p); });
-  return {pd:pd,po:po,rf:rf};
+function filtrar(q){
+  q=normalizarTexto(q,100).toLowerCase();
+  const pref=DIA_PREF[$("dia").value];
+  const pd=[],po=[],rf=[];
+  PARADAS.forEach(p=>{
+    if(q && `${p.c} ${p.n || ""}`.toLowerCase().indexOf(q)<0) return;
+    if(esPresel(p)){ if(p.c.indexOf(pref)===0) pd.push(p); else po.push(p); } else rf.push(p);
+  });
+  return {pd,po,rf};
 }
-function mostrarLista(q){ var r=filtrar(q), box=document.getElementById('paradaList'), html='';
-  function g(t,a,l){ if(!a.length) return ''; var s='<div class="combo-group">'+t+'</div>';
-    a.slice(0,l).forEach(function(p){ s+='<div class="combo-item" data-c="'+p.c+'"><span class="cc">'+p.c+'</span> — <span class="nn">'+(p.n||'')+'</span></div>'; }); return s; }
-  html+=g('Paradas del día', r.pd, 10); if(q) html+=g('Paradas (otros días)', r.po, 10); html+=g('Paradas', r.rf, 40);
-  if(!html) html='<div class="combo-item">Sin resultados</div>';
-  box.innerHTML=html; box.classList.add('open');
-  box.querySelectorAll('.combo-item[data-c]').forEach(function(it){ it.onclick=function(){ elegir(it.dataset.c); }; });
+function addGroup(box,title,items,limit){
+  if(!items.length) return;
+  const head=document.createElement("div"); head.className="combo-group"; head.textContent=title; box.appendChild(head);
+  items.slice(0,limit).forEach(p=>{
+    const it=document.createElement("button");
+    it.type="button"; it.className="combo-item"; it.setAttribute("role","option"); it.dataset.c=p.c;
+    const cc=document.createElement("span"); cc.className="cc"; cc.textContent=p.c;
+    const nn=document.createElement("span"); nn.className="nn"; nn.textContent=` — ${p.n || ""}`;
+    it.append(cc,nn); it.addEventListener("click",()=>elegir(p.c)); box.appendChild(it);
+  });
 }
-function elegir(cod){ var p=PARADAS.filter(function(x){return x.c===cod;})[0]; if(!p) return;
-  document.getElementById('parada').value=p.c; document.getElementById('paradaSearch').value='';
-  document.getElementById('paradaList').classList.remove('open');
-  var nav=p.m?' <a href="'+p.m+'" target="_blank" rel="noopener">Navegar ▸</a>':'';
-  document.getElementById('paradaSel').innerHTML='✓ '+p.c+' — '+(p.n||'')+nav;
-  meta.parada_codigo=p.c; meta.parada_nombre=p.n||''; validar();
+function mostrarLista(q){
+  const r=filtrar(q), box=$("paradaList"); box.replaceChildren();
+  addGroup(box,"Paradas del día",r.pd,20);
+  if(q) addGroup(box,"Paradas de otros días",r.po,28);
+  addGroup(box,"Paradas",r.rf,40);
+  if(!box.children.length){ const x=document.createElement("div"); x.className="combo-empty"; x.textContent="Sin resultados"; box.appendChild(x); }
+  box.classList.add("open");
 }
-(function(){ var inp=document.getElementById('paradaSearch');
-  inp.addEventListener('focus', function(){ mostrarLista(inp.value); });
-  inp.addEventListener('input', function(){ document.getElementById('parada').value=''; mostrarLista(inp.value); validar(); });
-  document.addEventListener('click', function(e){ if(!e.target.closest('.combo-wrap')) document.getElementById('paradaList').classList.remove('open'); });
-})();
+function pintarParadaSeleccionada(p){
+  const badge=$("paradaSel"); badge.replaceChildren();
+  if(!p) return;
+  const txt=document.createElement("span"); txt.textContent=`✓ ${p.c} — ${p.n || ""}`; badge.appendChild(txt);
+  if(Number.isFinite(p.lat) && Number.isFinite(p.lon)){
+    const a=document.createElement("a"); a.href=`https://www.google.com/maps?q=${encodeURIComponent(`${p.lat},${p.lon}`)}`;
+    a.target="_blank"; a.rel="noopener noreferrer"; a.textContent="Navegar ▸"; badge.appendChild(a);
+  }
+}
+function elegir(cod){
+  const p=PARADAS.find(x=>x.c===cod); if(!p) return;
+  $("parada").value=p.c; $("paradaSearch").value=""; $("paradaList").classList.remove("open");
+  meta.parada_codigo=p.c; meta.parada_nombre=p.n || ""; pintarParadaSeleccionada(p); guardar(); validar();
+}
 
-function iniciar(){
-  meta.contador=document.getElementById('contador').value.trim();
-  // Arranca (o re-arma) la jornada de 7 h. Si la jornada guardada ya venció o quedó vieja, empieza una nueva.
-  var _ahora=Date.now();
-  if(!meta.jornadaInicio || (_ahora-meta.jornadaInicio) > JORNADA_MS){ meta.jornadaInicio=_ahora; meta.jornadaCerrada=false; }
-  meta.inicio=stamp();
-  meta.motivoInicio = meta.pendienteCambio ? 'R' : 'I';   // I=Inicio de turno · R=cambio de parada/contador (automático)
-  meta.cambio = meta.pendienteCambio ? 'Sí' : 'No';       // se deriva del motivo, ya no de un campo manual
-  meta.pendienteCambio=false;
-  meta.turnoId='TURNO'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
-  meta.turnoHora=ahoraHMS();
-  guardar();
-  enviarInicioTurno();   // registra la marca (I o R) aunque no pase nadie
-  mostrarConteo();
-  var el=document.getElementById('lastMsg');
-  if(el) el.innerHTML='✓ '+(meta.motivoInicio==='R'?'Cambio de parada/contador (R)':'Inicio de turno (I)')+' registrado a las <b>'+meta.turnoHora+'</b> (aún sin conteo). Pulsa “▶ Iniciar conteo” cuando comiences.';
+function registroBase(tipo,id){
+  return { id:id || makeId(tipo), tipo, fecha:hoyFecha(), hora:ahoraHMS(), contador:meta.contador,
+    parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre, cambio_parada:meta.cambio,
+    sentido:meta.sentido || "", turno:meta.turno, tramo:meta.tramo || autoTramo(), hora_inicio:meta.horaInicio || "",
+    hora_fin:"", total:"", periodo_id:meta.periodoId || "", observaciones:"", dispositivo:deviceId, status:"pending", accion:"add" };
 }
 function enviarInicioTurno(){
-  var esR = meta.motivoInicio==='R';
-  var obs = esR ? 'R = CAMBIO DE PARADA/CONTADOR (marca de asistencia, no es conteo)'
-                : 'I = INICIO DE TURNO (marca de asistencia, no es conteo)';
-  var rec={ id:meta.turnoId, tipo:'INICIO_TURNO', fecha:hoyFecha(), hora:meta.turnoHora||ahoraHMS(),
-    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
-    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:autoTramo(),
-    hora_inicio:meta.turnoHora||ahoraHMS(), hora_fin:'', total:'', periodo_id:meta.turnoId,
-    observaciones:obs, dispositivo:deviceId, status:'pending' };
-  markers.push(rec); guardar(); enviar(rec);
+  const esR=meta.motivoInicio === "R";
+  const rec=registroBase("INICIO_TURNO",meta.turnoId);
+  rec.hora=meta.turnoHora || ahoraHMS(); rec.hora_inicio=rec.hora; rec.periodo_id=meta.turnoId;
+  rec.observaciones=esR?"R = CAMBIO DE PARADA/CONTADOR (marca de asistencia, no es conteo)":"I = INICIO DE TURNO (marca de asistencia, no es conteo)";
+  markers.push(rec); guardar(); flush();
 }
-function mostrarConteo(){
-  document.getElementById('setup').classList.add('hidden');
-  document.getElementById('conteo').classList.remove('hidden');
-  document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+(meta.tramo||meta.turno)+' · '+meta.contador;
-  document.getElementById('chips').textContent = meta.turno;
-  document.getElementById('obs').value = meta.obs||'';
-  if(!meta.periodoActivo){ iniciarPeriodo(); }   // el conteo arranca automáticamente al entrar
-  else { render(); pintarPeriodo(); iniciarElapsed(); }
+function iniciar(){
+  validar(); if($("startBtn").disabled) return;
+  meta.contador=normalizarTexto($("contador").value,CONTADOR_MAX);
+  const p=PARADAS.find(x=>x.c===$("parada").value); if(!p) return;
+  meta.parada_codigo=p.c; meta.parada_nombre=p.n || "";
+  if(!turnoValido(meta.turno)) return;
+  const now=Date.now();
+  if(!meta.jornadaInicio || now-meta.jornadaInicio>JORNADA_MS){ meta.jornadaInicio=now; meta.jornadaCerrada=false; }
+  meta.inicio=stamp(); meta.motivoInicio=meta.pendienteCambio?"R":"I"; meta.cambio=meta.pendienteCambio?"Sí":"No"; meta.pendienteCambio=false;
+  meta.turnoId=makeId("TURNO"); meta.turnoHora=ahoraHMS(); guardar(); enviarInicioTurno(); mostrarConteo();
+  $("lastMsg").textContent=`${meta.motivoInicio==="R"?"Cambio de parada/contador":"Inicio de turno"} registrado a las ${meta.turnoHora}. Conteo iniciado.`;
 }
 
-/* ---------- período de conteo (arranca automáticamente) ---------- */
-var elapsedInt=null;
+function mostrarConteo(){
+  $("setup").classList.add("hidden"); $("conteo").classList.remove("hidden");
+  $("hdrSub").textContent=`${meta.parada_codigo} · ${meta.tramo || meta.turno} · ${meta.contador}`;
+  $("chips").textContent=meta.turno; $("obs").value=meta.obs || "";
+  if(!meta.periodoActivo) iniciarPeriodo(); else { render(); pintarPeriodo(); iniciarElapsed(); }
+  window.scrollTo(0,0);
+}
+function podarMarkers(){ markers=markers.filter(r=>!statusEnviado(r.status)); }
+function preservarPendientesLog(){
+  const ids=new Set(markers.map(r=>r.id));
+  log.forEach(r=>{ if(statusPendiente(r.status) && !ids.has(r.id)){ markers.push(r); ids.add(r.id); } });
+}
 function iniciarPeriodo(){
-  markers = markers.filter(function(r){ return r.status!=='sent'; });  // poda de marcadores ya enviados
-  log=[];                                                              // nuevo período limpio
-  meta.periodoActivo=true;
-  meta.periodoId='T'+Date.now()+'_'+Math.random().toString(36).slice(2,5);
-  meta.horaInicio=ahoraHMS(); meta.horaFin='';
-  meta.tramo=autoTramo(); meta.tramoInicio=Date.now();
-  guardar();
-  /* No se registra nada al iniciar: el primer envío ocurre al primer toque de +1 pasajero. */
-  document.getElementById('hdrSub').textContent = meta.parada_codigo+' · '+meta.tramo+' · '+meta.contador;
-  document.getElementById('lastMsg').innerHTML='Conteo iniciado a las <b>'+meta.horaInicio+'</b>. Toca +1 por cada pasajero.';
+  preservarPendientesLog(); podarMarkers(); log=[];
+  meta.periodoActivo=true; meta.periodoId=makeId("T"); meta.horaInicio=ahoraHMS(); meta.horaFin=""; meta.tramo=autoTramo(); meta.tramoInicio=Date.now();
+  guardar(); $("hdrSub").textContent=`${meta.parada_codigo} · ${meta.tramo} · ${meta.contador}`;
+  $("lastMsg").textContent=`Conteo iniciado a las ${meta.horaInicio}. Toca +1 por cada pasajero.`;
   pintarPeriodo(); render(); iniciarElapsed();
 }
+function conteoValido(){ return log.filter(r=>r && r.tipo==="CONTEO" && !r.anulado).length; }
 function finalizarPeriodo(){
   if(!meta.periodoActivo) return;
-  var tot=log.length;
-  meta.horaFin=ahoraHMS(); meta.periodoActivo=false;
+  const tot=conteoValido(); meta.horaFin=ahoraHMS(); meta.periodoActivo=false;
   if(elapsedInt){ clearInterval(elapsedInt); elapsedInt=null; }
-  enviarResumen(tot);   // envía el total del tramo (0 si no hubo movimiento)
-  guardar();
+  enviarResumen(tot); meta.obs=""; $("obs").value=""; guardar();
   if(navigator.vibrate) navigator.vibrate([60,40,60]);
-  document.getElementById('lastMsg').innerHTML='Tramo finalizado: <b>'+tot+'</b> pasajero(s) · '+meta.horaInicio+'–'+meta.horaFin+'.';
+  $("lastMsg").textContent=`Tramo finalizado: ${tot} pasajero(s) · ${meta.horaInicio}–${meta.horaFin}.`;
   pintarPeriodo();
 }
 function pintarPeriodo(){
-  var tap=document.getElementById('tapBtn'), tag=document.getElementById('stateTag');
-  if(!tag) return;
-  document.getElementById('piInicio').textContent=meta.horaInicio||'—';
-  if(meta.periodoActivo){
-    if(tap) tap.disabled=false; tag.textContent='● Conteo en curso'; tag.className='state-tag on';
-  } else {
-    if(tap) tap.disabled=true; tag.textContent='Conteo sin iniciar'; tag.className='state-tag off';
-    document.getElementById('piElapsed').textContent='00:00';
-  }
+  const tap=$("tapBtn"), tag=$("stateTag"); $("piInicio").textContent=meta.horaInicio || "—";
+  if(meta.periodoActivo){ tap.disabled=false; tag.textContent="● Conteo en curso"; tag.className="state-tag on"; }
+  else { tap.disabled=true; tag.textContent="Conteo finalizado"; tag.className="state-tag off"; $("piElapsed").textContent="00:00"; }
 }
 function iniciarElapsed(){ if(elapsedInt) clearInterval(elapsedInt); tickElapsed(); elapsedInt=setInterval(tickElapsed,1000); }
-function tickElapsed(){ var el=document.getElementById('piElapsed'); if(!el||!meta.tramoInicio) return;
-  var s=Math.floor((Date.now()-meta.tramoInicio)/1000); el.textContent=fmt2(Math.floor(s/60))+':'+fmt2(s%60); }
+function tickElapsed(){
+  if(!meta.tramoInicio) return; const s=Math.max(0,Math.floor((Date.now()-meta.tramoInicio)/1000));
+  $("piElapsed").textContent=`${fmt2(Math.floor(s/60))}:${fmt2(s%60)}`;
+}
 
-/* ===== Cierre automático de la jornada a las 7 horas ===== */
-var JORNADA_MS = 7*60*60*1000;   // 7 horas
+function registrosPasajeros(){
+  return log.filter(r=>r && (r.tipo==="CONTEO" || r.tipo==="ANULADO" || r.tipo_original==="CONTEO"));
+}
+function ultimoValidoConNumero(){
+  const todos=registrosPasajeros();
+  for(let i=todos.length-1;i>=0;i--){
+    const r=todos[i];
+    if(r && !r.anulado && r.tipo==="CONTEO") return {rec:r, numero:i+1};
+  }
+  return null;
+}
+function registrar(){
+  if(!meta.periodoActivo){ $("lastMsg").textContent="El conteo no está activo."; return; }
+  const rec=registroBase("CONTEO"); rec.hora_inicio=meta.horaInicio; rec.periodo_id=meta.periodoId; rec.tramo=meta.tramo;
+  const obs=normalizarTexto($("obs").value,OBS_MAX);
+  rec.observaciones=obs;
+  log.push(rec);
+  // La observación pertenece solo a este pasajero. Una vez registrado, se limpia para evitar repetirla.
+  meta.obs=""; $("obs").value="";
+  guardar(); if(navigator.vibrate) navigator.vibrate(12);
+  const numero=registrosPasajeros().length;
+  $("lastMsg").textContent=obs
+    ? `✓ Pasajero #${numero} registrado a las ${rec.hora}. Observación guardada y campo limpiado.`
+    : `✓ Pasajero #${numero} registrado a las ${rec.hora}.`;
+  render(); flush();
+}
+function deshacer(){
+  const objetivo=ultimoValidoConNumero();
+  if(!objetivo){ $("lastMsg").textContent="No hay pasajeros válidos para anular en este tramo."; return; }
+  const rec=objetivo.rec, numero=objetivo.numero, previo=rec.status;
+  const obsOriginal=String(rec.observaciones || "").trim();
+  rec.anulado=true; rec.tipo_original="CONTEO"; rec.tipo="ANULADO"; rec.anula_id=rec.id; rec.hora_anulacion=ahoraHMS();
+  rec.observacion_original=obsOriginal;
+  rec.observaciones=obsOriginal
+    ? `${obsOriginal} | ANULADO: corrección del pasajero #${numero} registrado a las ${rec.hora || ""}`
+    : `ANULADO: corrección del pasajero #${numero} registrado a las ${rec.hora || ""}`;
+  if(previo === "sending"){
+    rec.needsCorrection=true; rec.accion="anular";
+  }else if(statusEnviado(previo)){
+    rec.status="pending"; rec.accion="anular";
+  }else{
+    rec.status="pending"; rec.accion="add";
+  }
+  guardar(); render();
+  $("lastMsg").textContent=`↩ Pasajero #${numero} de las ${rec.hora} marcado como ANULADO. Quedan ${conteoValido()} pasajero(s) válido(s).`;
+  flush();
+}
+function pintarHistorial(){
+  const box=$("recentLog"), preview=$("undoPreview"), undo=$("undoBtn");
+  if(!box || !preview || !undo) return;
+  box.replaceChildren();
+  const todos=registrosPasajeros();
+  const objetivo=ultimoValidoConNumero();
+  if(!todos.length){
+    const empty=document.createElement("div"); empty.className="log-empty"; empty.textContent="Aún no hay pasajeros registrados en este tramo."; box.appendChild(empty);
+    preview.className="undo-preview"; preview.textContent=""; undo.disabled=true; undo.textContent="↩ No hay pasajeros para anular"; return;
+  }
+  if(objetivo){
+    preview.className="undo-preview show";
+    preview.textContent=`↩ Si deshaces ahora: se anulará #${objetivo.numero} · ${objetivo.rec.hora}`;
+    undo.disabled=false; undo.textContent=`↩ Anular #${objetivo.numero} · ${objetivo.rec.hora}`;
+  }else{
+    preview.className="undo-preview"; preview.textContent=""; undo.disabled=true; undo.textContent="↩ No hay pasajeros válidos para anular";
+  }
+  const items=todos.map((r,i)=>({r,numero:i+1})).slice(-6).reverse();
+  items.forEach(({r,numero})=>{
+    const row=document.createElement("div");
+    const isTarget=!!(objetivo && objetivo.rec.id===r.id), isVoid=!!r.anulado;
+    row.className=`log-row${isTarget?" target":""}${isVoid?" void":""}`;
+    const num=document.createElement("div"); num.className="log-num"; num.textContent=`#${numero}`;
+    const main=document.createElement("div"); main.className="log-main";
+    const time=document.createElement("div"); time.className="log-time"; time.textContent=r.hora || "—";
+    const obs=document.createElement("div"); obs.className="log-obs";
+    const original=String(r.observacion_original || (isVoid?"":r.observaciones) || "").trim();
+    obs.textContent=original ? `Obs: ${original}` : (isTarget?"Este es el próximo registro que se anulará":"Sin observación");
+    main.append(time,obs);
+    const state=document.createElement("div"); state.className=`log-state ${isVoid?"void":"valid"}`; state.textContent=isVoid?"ANULADO":"VÁLIDO";
+    row.append(num,main,state); box.appendChild(row);
+  });
+}
+function render(){
+  $("tTotal").textContent=String(conteoValido());
+  pintarHistorial();
+  pintarPend();
+}
+
+function enviarResumen(tot){
+  const rec=registroBase("RESUMEN",`${meta.periodoId}_RESUMEN`);
+  rec.hora=meta.horaFin || ahoraHMS(); rec.hora_inicio=meta.horaInicio; rec.hora_fin=meta.horaFin;
+  rec.total=tot==null?conteoValido():tot; rec.periodo_id=meta.periodoId; rec.tramo=meta.tramo;
+  // El resumen no reutiliza la observación del siguiente pasajero.
+  rec.observaciones="";
+  markers.push(rec); guardar(); flush();
+}
+function registrosUnicos(){
+  const m=new Map(); markers.concat(log).forEach(r=>{ if(r && r.id) m.set(r.id,r); }); return Array.from(m.values());
+}
+function pendientes(){ return registrosUnicos().filter(r=>statusPendiente(r.status)).length; }
+function pintarPend(){
+  const el=$("pendMsg"), n=pendientes();
+  if(!navigator.onLine){ el.className="pend w"; el.textContent=n?`Sin conexión · ${n} registro(s) guardado(s) para reenviar`:`Sin conexión · sin pendientes locales`; return; }
+  if(n){ el.className="pend w"; el.textContent=`⏳ ${n} registro(s) pendiente(s) de sincronizar`; }
+  else { el.className="pend ok"; el.textContent="✓ cola local sincronizada"; }
+}
+function payloadDe(rec){
+  const keys=["id","anula_id","accion","tipo","fecha","hora","contador","parada_codigo","parada_nombre","cambio_parada","sentido","turno","tramo","hora_inicio","hora_fin","total","periodo_id","observaciones","observacion_original","hora_anulacion","dispositivo"];
+  const p={}; keys.forEach(k=>{ if(rec[k]!==undefined && rec[k]!==null) p[k]=rec[k]; });
+  if(!p.accion) p.accion="add"; return p;
+}
+function siguientePendiente(){ return registrosUnicos().find(r=>r.status==="pending") || null; }
+function flush(){
+  pintarPend();
+  if(syncBusy || !navigator.onLine) return;
+  const rec=siguientePendiente(); if(!rec) return;
+  syncBusy=true; rec.status="sending"; guardar(); pintarPend();
+  const payload=payloadDe(rec);
+  fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",cache:"no-store",redirect:"follow",keepalive:true,headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})
+    .then(()=>{
+      syncBusy=false; syncRetryMs=1500;
+      if(rec.needsCorrection){ rec.needsCorrection=false; rec.status="pending"; rec.accion="anular"; }
+      else { rec.status="submitted"; }
+      guardar(); pintarPend(); clearTimeout(syncRetryTimer); syncRetryTimer=setTimeout(flush,80);
+    })
+    .catch(()=>{
+      syncBusy=false; rec.status="pending"; guardar(); pintarPend();
+      clearTimeout(syncRetryTimer); syncRetryTimer=setTimeout(flush,syncRetryMs); syncRetryMs=Math.min(30000,Math.round(syncRetryMs*1.7));
+    });
+}
+function reintentar(){ syncRetryMs=1500; flush(); $("lastMsg").textContent=pendientes()?"Reintentando sincronizar los registros pendientes…":"No hay registros pendientes de sincronizar."; }
+setInterval(flush,20000);
+
 function vigilarJornada(){
-  if(meta.jornadaCerrada || !meta.jornadaInicio) return;
-  // Solo aplica cuando el trabajador ya está en la pantalla de conteo (jornada en marcha).
-  var enConteo = !document.getElementById('conteo').classList.contains('hidden');
-  if(!enConteo) return;
-  if(Date.now()-meta.jornadaInicio >= JORNADA_MS) cerrarJornada();
+  if(meta.jornadaCerrada || !meta.jornadaInicio || $("conteo").classList.contains("hidden")) return;
+  if(Date.now()-meta.jornadaInicio>=JORNADA_MS) cerrarJornada();
 }
 function cerrarJornada(){
-  if(meta.jornadaCerrada) return;
-  meta.jornadaCerrada=true;
-  if(meta.periodoActivo) finalizarPeriodo();   // envía el total del tramo en curso antes de cerrar
-  if(elapsedInt){ clearInterval(elapsedInt); elapsedInt=null; }
-  guardar(); flush();                          // asegura el envío de lo pendiente
-  var ov=document.getElementById('jornadaOverlay');
-  if(ov){ ov.style.display='flex'; }
-  if(navigator.vibrate) navigator.vibrate([120,60,120,60,120]);
-  // Intento de cierre real (funciona si la app se abrió como ventana/PWA); si no, queda la pantalla de bloqueo.
-  setTimeout(function(){ try{ window.close(); }catch(e){} }, 1800);
+  if(meta.jornadaCerrada) return; meta.jornadaCerrada=true;
+  if(meta.periodoActivo) finalizarPeriodo();
+  preservarPendientesLog(); guardar(); flush();
+  $("jornadaOverlay").style.display="flex"; if(navigator.vibrate) navigator.vibrate([120,60,120,60,120]);
 }
-setInterval(vigilarJornada, 15000);   // revisa cada 15 s
+setInterval(vigilarJornada,15000);
 function nuevaJornada(){
-  // Reinicia la jornada de 7 h y vuelve a la pantalla de Identificación lista para empezar.
-  meta.jornadaInicio=0; meta.jornadaCerrada=false;
-  log=[]; meta.obs=''; meta.tramoInicio=0; meta.avisado=false;
-  meta.periodoActivo=false; meta.horaInicio=''; meta.horaFin=''; meta.pendienteCambio=false;
-  if(elapsedInt){ clearInterval(elapsedInt); elapsedInt=null; }
-  if(timerInt){ clearInterval(timerInt); timerInt=null; }
-  var ov=document.getElementById('jornadaOverlay'); if(ov) ov.style.display='none';
-  document.getElementById('conteo').classList.add('hidden');
-  document.getElementById('setup').classList.remove('hidden');
-  document.getElementById('hdrSub').textContent='Identificación del puesto';
-  document.getElementById('contador').value=meta.contador||'';
-  document.getElementById('obs').value='';
-  if(meta.parada_codigo){ document.getElementById('parada').value=meta.parada_codigo;
-    document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||''); }
-  document.getElementById('inicioAuto').textContent=stamp();
-  guardar(); validar(); window.scrollTo(0,0);
+  preservarPendientesLog(); log=[]; meta.jornadaInicio=0; meta.jornadaCerrada=false; meta.obs=""; meta.tramoInicio=0; meta.avisado=false;
+  meta.periodoActivo=false; meta.horaInicio=""; meta.horaFin=""; meta.pendienteCambio=false;
+  if(elapsedInt){clearInterval(elapsedInt);elapsedInt=null;}
+  $("jornadaOverlay").style.display="none"; $("conteo").classList.add("hidden"); $("setup").classList.remove("hidden");
+  $("hdrSub").textContent="Identificación del puesto"; $("contador").value=meta.contador || ""; $("obs").value="";
+  const p=PARADAS.find(x=>x.c===meta.parada_codigo); $("parada").value=p?p.c:""; pintarParadaSeleccionada(p || null);
+  $("inicioAuto").textContent=stamp(); guardar(); validar(); flush(); window.scrollTo(0,0);
 }
-
-function registrar(){
-  if(!meta.periodoActivo){ alert('Primero pulsa “▶ Iniciar conteo”.'); return; }
-  var rec={ id:Date.now()+'_'+Math.random().toString(36).slice(2,6), tipo:'CONTEO', fecha:hoyFecha(), hora:ahoraHMS(),
-    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
-    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:meta.tramo,
-    hora_inicio:meta.horaInicio, hora_fin:'', total:'', periodo_id:meta.periodoId,
-    observaciones:document.getElementById('obs')?document.getElementById('obs').value:'',
-    dispositivo:deviceId, status:'pending' };
-  log.push(rec); guardar();
-  if(navigator.vibrate) navigator.vibrate(12);
-  document.getElementById('lastMsg').innerHTML='Último pasajero: <b>'+rec.hora+'</b>';
-  render(); enviar(rec);
-}
-function deshacer(){ if(!log.length){ document.getElementById('lastMsg').textContent='No hay registros que deshacer.'; return; }
-  var rec=log.pop(); guardar();
-  if(rec.status==='sent' || rec.status==='sending'){ anularEnSheets(rec); }
-  document.getElementById('lastMsg').textContent='Se deshizo el último (registrado como corrección).'; render(); }
-/* Deshacer: deja UNA sola fila ANULADO reusando la MISMA id del original.
-   Se borra el original y se envía la corrección con su id; al reusar la id, la
-   de-duplicación evita que el original (fila en blanco) reaparezca o se duplique. */
-function anularEnSheets(orig){
-  if(!orig || !orig.id) return;
-  var rec={ id:orig.id+'_ANUL', anula_id:orig.id, accion:'anular', tipo:'ANULADO', fecha:hoyFecha(), hora:ahoraHMS(),
-    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
-    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:meta.tramo,
-    hora_inicio:meta.horaInicio, hora_fin:'', total:'', periodo_id:meta.periodoId,
-    observaciones:'REGISTRO DESHECHO (corrección, no es conteo) — anula pasajero de las '+(orig.hora||''),
-    dispositivo:deviceId, status:'pending' };
-  markers = markers.filter(function(m){ return m.id!==rec.id; });
-  markers.push(rec); guardar(); enviar(rec);
-}
-function reiniciar(){ if(!log.length) return;
-  if(confirm('¿Reiniciar el conteo local de este tramo? (No borra lo ya enviado a Google Sheets)')){ log=[]; guardar(); render(); } }
-function render(){ document.getElementById('tTotal').textContent=log.length; pintarPend(); }
-function pendientes(){ return log.filter(function(r){return r.status!=='sent';}).length + markers.filter(function(r){return r.status!=='sent';}).length; }
-function pintarPend(){ var pend=pendientes(); var el=document.getElementById('pendMsg');
-  if(!scriptUrl){ el.innerHTML='<span class="w">⚠ Sin enlace de Google Sheets — guardando solo local.</span>'; return; }
-  el.innerHTML = pend? '<span class="w">⏳ '+pend+' pendiente(s) de enviar</span>' : '<span class="ok">✓ todo enviado</span>'; }
-
-/* Marcadores INICIO / RESUMEN: garantizan que el tramo quede registrado aunque no pase nadie */
-function enviarMarcador(tipo){
-  var rec={ id:meta.periodoId+'_'+tipo, tipo:tipo, fecha:hoyFecha(), hora:meta.horaInicio||ahoraHMS(),
-    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
-    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:meta.tramo,
-    hora_inicio:meta.horaInicio, hora_fin:'', total:'', periodo_id:meta.periodoId,
-    observaciones:'', dispositivo:deviceId, status:'pending' };
-  markers.push(rec); guardar(); enviar(rec);
-}
-function enviarResumen(tot){
-  var rec={ id:meta.periodoId+'_RESUMEN', tipo:'RESUMEN', fecha:hoyFecha(), hora:meta.horaFin||ahoraHMS(),
-    contador:meta.contador, parada_codigo:meta.parada_codigo, parada_nombre:meta.parada_nombre,
-    cambio_parada:meta.cambio, sentido:meta.sentido, turno:meta.turno, tramo:meta.tramo,
-    hora_inicio:meta.horaInicio, hora_fin:meta.horaFin, total:(tot==null?log.length:tot), periodo_id:meta.periodoId,
-    observaciones:document.getElementById('obs')?document.getElementById('obs').value:'',
-    dispositivo:deviceId, status:'pending' };
-  markers.push(rec); guardar(); enviar(rec);
-}
-
-function enviar(rec){
-  if(!scriptUrl || !navigator.onLine){ pintarPend(); return; }
-  if(rec.status==='sent' || rec.status==='sending'){ return; }
-  rec.status='sending'; guardar(); pintarPend();
-  var payload={}; for(var k in rec){ if(k!=='status') payload[k]=rec[k]; } if(!payload.accion){ payload.accion='add'; }
-  try{
-    fetch(scriptUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload) })
-    .then(function(){ rec.status='sent'; guardar(); pintarPend(); if(rec.deleted){ eliminarEnSheets(rec); } })
-    .catch(function(){ rec.status='pending'; guardar(); pintarPend(); });
-  }catch(e){ rec.status='pending'; guardar(); pintarPend(); }
-}
-function eliminarEnSheets(rec){
-  if(!scriptUrl || !rec || !rec.id) return;
-  try{ fetch(scriptUrl, { method:'POST', mode:'no-cors', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({accion:'delete', id:rec.id}) }); }catch(e){}
-}
-/* Cronómetro removido: el tramo se cierra manualmente con "Cerrar tramo / Nuevo tramo". */
-var timerInt=null;
-function flush(){ if(!scriptUrl || !navigator.onLine){ pintarPend(); return; }
-  log.filter(function(r){return r.status==='pending';}).forEach(function(r){ enviar(r); });
-  markers.filter(function(r){return r.status==='pending';}).forEach(function(r){ enviar(r); }); }
-function reintentar(){ flush(); alert('Reintentando enviar los pendientes...'); }
-setInterval(flush, 20000);
-
-document.getElementById('obs').addEventListener('input', function(){ meta.obs=this.value; guardar(); });
-
-function exportarCSV(){
-  if(!log.length && !markers.length){ alert('No hay registros.'); return; }
-  var esc=function(v){ v=String(v==null?'':v); return /[",\r\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; };
-  var h=['Tipo','Fecha','Hora','Contador','Parada_Codigo','Parada_Nombre','Cambio_Parada','Sentido','Turno','Tramo_Horario','Hora_Inicio','Hora_Fin','Total','Observaciones','ID_dispositivo','Estado_envio'];
-  var lines=[h.join(',')];
-  var todos=markers.concat(log);
-  todos.forEach(function(r){ lines.push([r.tipo||'CONTEO',r.fecha,r.hora,r.contador,r.parada_codigo,r.parada_nombre,r.cambio_parada,r.sentido,r.turno,r.tramo,r.hora_inicio||'',r.hora_fin||'',(r.total==null?'':r.total),r.observaciones,r.dispositivo,r.status].map(esc).join(',')); });
-  var blob=new Blob(['﻿'+lines.join('\r\n')],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='pasajeros_'+(meta.parada_codigo||'').replace(/[^A-Za-z0-9]/g,'')+'_'+(meta.tramo||'').replace(/[^0-9]/g,'')+'.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
-
 function nuevoTramo(){
-  if(meta.periodoActivo){
-    if(!confirm('El conteo está en curso. ¿Finalizar este tramo y cambiar de parada/contador?')) return;
-    finalizarPeriodo();
-  }
-  var pend=pendientes();
-  if(pend && !confirm('Hay '+pend+' registro(s) sin enviar. ¿Continuar igual? (Se reintentarán solos cuando haya señal)')) return;
-  log=[]; meta.obs=''; meta.tramoInicio=0; meta.avisado=false;
-  meta.periodoActivo=false; meta.horaInicio=''; meta.horaFin='';
-  meta.pendienteCambio=true;   // el próximo inicio se marca como R (cambio de parada/contador)
-  if(elapsedInt){ clearInterval(elapsedInt); elapsedInt=null; }
-  if(timerInt){ clearInterval(timerInt); timerInt=null; }
-  document.getElementById('setup').classList.remove('hidden');
-  document.getElementById('conteo').classList.add('hidden');
-  document.getElementById('hdrSub').textContent='Identificación del puesto';
-  document.getElementById('contador').value=meta.contador;
-  document.getElementById('obs').value='';
-  if(meta.parada_codigo){ document.getElementById('parada').value=meta.parada_codigo;
-    document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||''); }
-  document.getElementById('inicioAuto').textContent=stamp();
-  guardar(); validar(); window.scrollTo(0,0);
+  const obsPendiente=normalizarTexto($("obs").value,OBS_MAX);
+  if(obsPendiente && !confirm("Hay una observación escrita que todavía no fue asociada a ningún pasajero. Si finalizas el tramo, se descartará. ¿Continuar?")) return;
+  if(meta.periodoActivo && !confirm("¿Finalizar este tramo y volver a la identificación del puesto?")) return;
+  if(meta.periodoActivo) finalizarPeriodo();
+  preservarPendientesLog(); log=[]; meta.obs=""; meta.tramoInicio=0; meta.avisado=false; meta.periodoActivo=false; meta.horaInicio=""; meta.horaFin=""; meta.pendienteCambio=true;
+  if(elapsedInt){clearInterval(elapsedInt);elapsedInt=null;}
+  $("setup").classList.remove("hidden"); $("conteo").classList.add("hidden"); $("hdrSub").textContent="Identificación del puesto";
+  $("contador").value=meta.contador; $("obs").value="";
+  const p=PARADAS.find(x=>x.c===meta.parada_codigo); $("parada").value=p?p.c:""; pintarParadaSeleccionada(p || null);
+  $("inicioAuto").textContent=stamp(); guardar(); validar(); flush(); window.scrollTo(0,0);
 }
 
-(function init(){
+function init(){
   cargar(); pintarRed();
-  // Al reabrir la app tras cerrar una jornada, queda lista para empezar de nuevo (no atascada en la pantalla de fin).
-  if(meta.jornadaCerrada){ meta.jornadaCerrada=false; meta.jornadaInicio=0; meta.periodoActivo=false; guardar(); }
-  var ov=document.getElementById('jornadaOverlay'); if(ov) ov.style.display='none';
-  if(scriptUrl) document.getElementById('scriptUrl').value=scriptUrl;
-  document.getElementById('inicioAuto').textContent=stamp();
-  if(meta.contador && meta.parada_codigo && meta.turno){
-    document.getElementById('contador').value=meta.contador;
-    document.getElementById('parada').value=meta.parada_codigo;
-    document.getElementById('paradaSel').innerHTML='✓ '+meta.parada_codigo+' — '+(meta.parada_nombre||'');
-    document.querySelectorAll('#turnoRow button').forEach(function(x){ x.classList.toggle('on', x.dataset.v===meta.turno); });
-    flush();   /* siempre inicia en la pantalla de Identificación; los datos quedan precargados */
-  }
-  validar();
-})();
+  DIAS.forEach(d=>{const o=document.createElement("option");o.value=d;o.textContent=d;o.hidden=true;$("dia").appendChild(o);});
+  const map={0:"Domingo",1:"Lunes",2:"Martes",3:"Miecoles",4:"Jueves",5:"Viernes",6:"Sabado"}; $("dia").value=map[new Date().getDay()];
+  $("dayHint").textContent=`Hoy: ${$("dia").value}. Se muestran primero las paradas asignadas a este día.`;
+  $("inicioAuto").textContent=stamp(); $("contador").value=meta.contador || "";
+  const p=PARADAS.find(x=>x.c===meta.parada_codigo); if(p){ $("parada").value=p.c; pintarParadaSeleccionada(p); }
+  if(turnoValido(meta.turno)) document.querySelectorAll("#turnoRow button").forEach(x=>x.classList.toggle("on",x.dataset.v===meta.turno));
+  bindRadio("turnoRow",v=>{meta.turno=v;guardar();});
+  $("contador").addEventListener("input",()=>{ $("contador").value=$("contador").value.slice(0,CONTADOR_MAX); validar(); });
+  $("paradaSearch").addEventListener("focus",()=>mostrarLista($("paradaSearch").value));
+  $("paradaSearch").addEventListener("input",()=>{ $("parada").value=""; meta.parada_codigo="";meta.parada_nombre="";pintarParadaSeleccionada(null);mostrarLista($("paradaSearch").value);validar(); });
+  document.addEventListener("click",e=>{ if(!e.target.closest(".combo-wrap")) $("paradaList").classList.remove("open"); });
+  $("startBtn").addEventListener("click",iniciar); $("tapBtn").addEventListener("click",registrar); $("undoBtn").addEventListener("click",deshacer);
+  $("retryBtn").addEventListener("click",reintentar); $("newTramoBtn").addEventListener("click",nuevoTramo); $("newJornadaBtn").addEventListener("click",nuevaJornada);
+  $("obs").maxLength=OBS_MAX; $("obs").addEventListener("input",function(){meta.obs=this.value.slice(0,OBS_MAX);guardar();});
+  validar(); pintarPend();
+  // Si el navegador se cerró durante un conteo, se reanuda exactamente el período guardado, sin crear un segundo INICIO_TURNO.
+  if(meta.periodoActivo && meta.contador && p && turnoValido(meta.turno) && !meta.jornadaCerrada){ mostrarConteo(); $("lastMsg").textContent=`Conteo reanudado. Período iniciado a las ${meta.horaInicio}.`; }
+  flush();
+}
+
+document.addEventListener("DOMContentLoaded",init);
 </script>
 </body>
 </html>
