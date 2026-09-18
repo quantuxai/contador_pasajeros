@@ -553,10 +553,27 @@ function pintarPend(){
 }
 function lotePendiente(){ return registrosUnicos().filter(r=>r&&r.status==="pending").sort((a,b)=>(Number(a.orden_local)||0)-(Number(b.orden_local)||0)).slice(0,BATCH_SIZE); }
 async function postBatch(payloads){
-  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),POST_TIMEOUT_MS);
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),POST_TIMEOUT_MS);
+
   try{
-    await fetch(SCRIPT_URL,{method:"POST",mode:"no-cors",cache:"no-store",redirect:"manual",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({accion:"batch",registros:payloads}),signal:controller.signal});
-  }finally{ clearTimeout(timer); }
+    await fetch(SCRIPT_URL,{
+      method:"POST",
+      mode:"no-cors",
+      cache:"no-store",
+      redirect:"follow",
+      headers:{
+        "Content-Type":"text/plain;charset=utf-8"
+      },
+      body:JSON.stringify({
+        accion:"batch",
+        registros:payloads
+      }),
+      signal:controller.signal
+    });
+  }finally{
+    clearTimeout(timer);
+  }
 }
 async function flush(force){
   pintarPend();
